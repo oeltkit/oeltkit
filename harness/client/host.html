@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OELT Harness</title>
+    <link rel="stylesheet" href="/harness/styles.css" />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="topbar">
+        <span class="brand">OELT Fake-LMS Harness</span>
+        <nav class="modes" id="modes" aria-label="Delivery mode">
+          <button data-mode="scorm12" type="button">SCORM 1.2</button>
+          <button data-mode="scorm2004" type="button">SCORM 2004</button>
+          <button data-mode="cmi5" type="button">cmi5</button>
+          <button data-mode="web" type="button">Web</button>
+        </nav>
+      </header>
+      <div class="body">
+        <section class="stage">
+          <iframe id="course-frame" title="Course preview"></iframe>
+        </section>
+        <aside class="inspector" id="inspector"></aside>
+      </div>
+    </div>
+
+    <script type="module">
+      import { createHarness } from "/harness/panel.js";
+      import { makeScormApi } from "/harness/scorm-api.js";
+
+      const VALID = ["scorm12", "scorm2004", "cmi5", "web"];
+      const mode = (() => {
+        const m = new URLSearchParams(location.search).get("mode");
+        return VALID.includes(m) ? m : "scorm12";
+      })();
+
+      // Mode switcher (reload re-launches cleanly — important for SCORM resume).
+      const modesNav = document.getElementById("modes");
+      for (const btn of modesNav.querySelectorAll("button")) {
+        btn.classList.toggle("active", btn.dataset.mode === mode);
+        btn.addEventListener("click", () => {
+          location.search = `?mode=${btn.dataset.mode}`;
+        });
+      }
+
+      const harness = createHarness({ mode, rootEl: document.getElementById("inspector") });
+
+      const course = await (await fetch("/harness/course.json")).json();
+
+      // Stable registration per course+mode so cmi5/web resume survives reloads.
+      const regKey = `oelt:reg:${course.id}:${mode}`;
+      let registration = localStorage.getItem(regKey);
+      if (!registration) {
+        registration = crypto.randomUUID();
+        localStorage.setItem(regKey, registration);
+      }
+
+      // Build the preview URL. SCORM/web just need the mode; cmi5 needs the
+      // full launch parameter set (cmi5 §8.1).
+      const previewUrl = new URL("/preview", location.origin);
+      previewUrl.searchParams.set("mode", mode);
+
+      if (mode === "scorm12" || mode === "scorm2004") {
+        // Seed resume state from the server BEFORE the API exists, so the very
+        // first LMSGetValue after the content's Initialize sees prior state.
+        const seed = await (await fetch(`/api/state?mode=${mode}`)).json();
+        const api = makeScormApi(mode === "scorm12" ? "1.2" : "2004", harness, seed);
+        if (mode === "scorm12") window.API = api;
+        else window.API_1484_11 = api;
+      } else if (mode === "cmi5") {
+        const actor = {
+          objectType: "Agent",
+          name: "Harness Learner",
+          account: { homePage: location.origin, name: "harness-learner" },
+        };
+        previewUrl.searchParams.set("endpoint", "/cmi5/");
+        previewUrl.searchParams.set("fetch", `/cmi5/fetch?registration=${registration}`);
+        previewUrl.searchParams.set("actor", JSON.stringify(actor));
+        previewUrl.searchParams.set("registration", registration);
+        previewUrl.searchParams.set("activityId", course.id);
+      }
+
+      // Create the iframe only now that the panel + API are wired up.
+      document.getElementById("course-frame").src = previewUrl.toString();
+    </script>
+  </body>
+</html>

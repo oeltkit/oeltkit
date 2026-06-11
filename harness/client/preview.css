@@ -1,0 +1,91 @@
+/* Course preview chrome (the harness frame around author content). Author
+   content is light-DOM, so these styles are scoped to the .c-* chrome classes
+   and a neutral base for the page body. */
+body {
+  margin: 0;
+  font:
+    16px/1.5 system-ui,
+    sans-serif;
+  color: #1a1f29;
+  background: #f5f6f8;
+}
+#course-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.c-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 1rem;
+  background: #fff;
+  border-bottom: 1px solid #d9dde5;
+}
+.c-mode {
+  font:
+    700 0.7rem ui-monospace,
+    monospace;
+  background: #4da3ff;
+  color: #04101f;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.c-head button {
+  border: 1px solid #c2c8d4;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  font: inherit;
+}
+.c-toc {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  background: #eef0f4;
+  border-bottom: 1px solid #d9dde5;
+}
+.c-toc button {
+  border: 1px solid #c2c8d4;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.2rem 0.7rem;
+  cursor: pointer;
+  font: 0.85rem system-ui;
+}
+.c-toc button.active {
+  background: #1a1f29;
+  color: #fff;
+  border-color: #1a1f29;
+}
+.c-page {
+  flex: 1;
+  padding: 1.5rem clamp(1rem, 5vw, 3rem);
+  max-width: 70ch;
+  margin: 0 auto;
+  outline: none;
+}
+.c-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  border-top: 1px solid #d9dde5;
+}
+.c-nav button {
+  border: 1px solid #c2c8d4;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  font: inherit;
+}
+.c-nav button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

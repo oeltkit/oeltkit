@@ -1,0 +1,240 @@
+/* Harness host shell + inspector panel. Designed to be legible in a static
+   screenshot: high contrast, no hover-only information, monospace for data. */
+:root {
+  --bg: #0f1420;
+  --bg-card: #1a2233;
+  --bg-stage: #f5f6f8;
+  --fg: #e7ecf3;
+  --muted: #93a0b5;
+  --line: #2b3650;
+  --accent: #4da3ff;
+  --ok: #36c98d;
+  --warn: #f3b13b;
+  --err: #ff6b6b;
+  --mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font:
+    14px/1.45 system-ui,
+    sans-serif;
+  color: var(--fg);
+  background: var(--bg);
+}
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem 1rem;
+  background: #0b0f18;
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.modes {
+  display: flex;
+  gap: 0.35rem;
+}
+.modes button {
+  background: var(--bg-card);
+  color: var(--fg);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  font: inherit;
+}
+.modes button.active {
+  background: var(--accent);
+  color: #04101f;
+  border-color: var(--accent);
+  font-weight: 700;
+}
+.body {
+  display: grid;
+  grid-template-columns: 1fr 30rem;
+  flex: 1;
+  min-height: 0;
+}
+.stage {
+  background: var(--bg-stage);
+  min-height: 0;
+}
+#course-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.inspector {
+  border-left: 1px solid var(--line);
+  background: var(--bg);
+  overflow: auto;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  min-height: 100%;
+}
+.panel h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.mode-badge {
+  font: 700 0.7rem var(--mono);
+  background: var(--accent);
+  color: #04101f;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+}
+.card.grow {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 12rem;
+}
+.card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  display: flex;
+  justify-content: space-between;
+}
+.card h3 button {
+  background: none;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.7rem;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+.summary .lbl {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.summary .val {
+  display: block;
+  font: 700 1.05rem var(--mono);
+}
+.status-completed,
+.status-passed {
+  color: var(--ok);
+}
+.status-failed {
+  color: var(--err);
+}
+.status-incomplete {
+  color: var(--warn);
+}
+
+.suspend {
+  font: 0.85rem var(--mono);
+}
+.suspend.ok {
+  color: var(--ok);
+}
+.suspend.warn {
+  color: var(--warn);
+}
+.suspend.err {
+  color: var(--err);
+}
+.suspend strong {
+  font-size: 1.05rem;
+}
+.bar {
+  margin-top: 0.4rem;
+  height: 6px;
+  background: var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.kv {
+  font: 0.8rem var(--mono);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.kv > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.kv code {
+  color: var(--accent);
+}
+.kv span {
+  color: var(--fg);
+  word-break: break-all;
+  text-align: right;
+}
+.muted {
+  color: var(--muted);
+}
+
+.log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: 0.78rem var(--mono);
+  overflow: auto;
+  flex: 1;
+}
+.log li {
+  padding: 0.2rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.log .t {
+  color: var(--muted);
+}
+.log-statement b {
+  color: var(--accent);
+}
+.log-state b {
+  color: var(--warn);
+}
+.log em {
+  color: var(--ok);
+  font-style: normal;
+}
+.log code {
+  color: var(--accent);
+}
+.r-err {
+  color: var(--err);
+}

@@ -8,6 +8,9 @@ test-results/
 playwright-report/
 .playwright/
 
+# Harness runtime state (SCORM/web resume files)
+harness/.state/
+
 # OS / editor
 .DS_Store
 *.log
