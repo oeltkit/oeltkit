@@ -1,0 +1,14 @@
+{
+  "oelt": "0.1",
+  "id": "org.oeltkit.minimal",
+  "title": "Minimal Course",
+  "lang": "en",
+  "targets": ["web"],
+  "structure": [
+    {
+      "id": "m1",
+      "title": "Module 1",
+      "pages": [{ "id": "p1", "title": "Welcome", "src": "pages/p1.html" }]
+    }
+  ]
+}

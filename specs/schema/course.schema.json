@@ -1,0 +1,216 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oeltkit.org/schema/v0/course.schema.json",
+  "title": "OELT Course Manifest",
+  "description": "Schema for course.json — the single source of truth for an OELT course. Manifest model: 'structured shell, free body' (Decision 1, Option C). Structure and tracking are declared here; page content is free HTML referenced by `src`. Tracking semantics are Decision 2, Option 2 (declarative rules with a closed vocabulary).",
+  "type": "object",
+  "required": ["oelt", "id", "title", "lang", "targets", "structure"],
+  "additionalProperties": false,
+  "properties": {
+    "oelt": {
+      "description": "Manifest schema version. Consumers MUST refuse a major version they do not understand. v0 manifests use \"0.1\".",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "id": {
+      "description": "Globally unique course identifier in reverse-DNS form (e.g. \"com.bcl.data-privacy-101\"). Used as the package/activity identifier across all targets.",
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9]*(\\.[a-z0-9-]+)+$",
+      "minLength": 3,
+      "maxLength": 255
+    },
+    "title": {
+      "description": "Human-readable course title.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "lang": {
+      "description": "BCP-47 language tag for the course's primary language (e.g. \"en\", \"en-GB\", \"fr-CA\"). Required because it drives the document `lang` attribute, which is a WCAG 2.2 requirement.",
+      "type": "string",
+      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{2,8})*$"
+    },
+    "targets": {
+      "description": "Distribution targets this course is built for. The packager produces one artifact per target from identical content.",
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": ["scorm12", "scorm2004", "cmi5", "web"]
+      }
+    },
+    "theme": {
+      "description": "Optional path (relative to the manifest) to a CSS file that overrides the default `--oelt-*` design tokens.",
+      "type": "string",
+      "minLength": 1
+    },
+    "tracking": {
+      "$ref": "#/$defs/tracking"
+    },
+    "structure": {
+      "description": "Ordered list of modules. Navigation and sequencing are derived from this tree.",
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/module" }
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "description": "An identifier unique within the course. Used as a DOM id and as the basis for target-specific identifiers, so it MUST be a valid HTML id token: start with a letter, then letters/digits/hyphen/underscore.",
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9_-]*$",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "module": {
+      "type": "object",
+      "required": ["id", "title", "pages"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "pages": {
+          "description": "Ordered list of pages within the module.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/page" }
+        }
+      }
+    },
+    "page": {
+      "type": "object",
+      "required": ["id", "title", "src"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "$ref": "#/$defs/identifier" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 255 },
+        "src": {
+          "description": "Path (relative to the manifest) to the page's HTML body file. Content is free HTML; OELT never describes it.",
+          "type": "string",
+          "minLength": 1
+        },
+        "interactions": {
+          "description": "Optional declaration of the page's tracked interactions. Omit for untracked pages (graceful degradation to a structure-only manifest). The validator cross-checks that every declared interaction id exists in the page HTML.",
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/interaction" }
+        }
+      }
+    },
+    "interaction": {
+      "description": "A tracked interaction on a page. The contract that lets tracking config be machine-checkable without parsing creative HTML.",
+      "type": "object",
+      "required": ["id", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "Interaction id. MUST match the `id` of an element in the page HTML.",
+          "$ref": "#/$defs/identifier"
+        },
+        "type": {
+          "description": "The kind of interaction, for analytics and target mapping (e.g. \"mcq\", \"quiz\", \"branching\", \"text-entry\"). v0 does not constrain the vocabulary; the validator checks it against the element actually present.",
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9-]*$",
+          "maxLength": 64
+        },
+        "weight": {
+          "description": "Relative weight when score.rule is \"weighted-interactions\". Defaults to 1.0. Ignored by other score rules.",
+          "type": "number",
+          "minimum": 0,
+          "default": 1.0
+        },
+        "required": {
+          "description": "Whether this interaction must be completed/passed for completion rules \"required-interactions-completed\" / \"required-interactions-passed\". Defaults to false.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "tracking": {
+      "description": "Tracking rules. When absent, the course uses zero-config defaults: completion = all-pages-viewed, score = none, progress = pages-viewed (Decision 2, Option 1 as default).",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "completion": { "$ref": "#/$defs/completionRule" },
+        "score": { "$ref": "#/$defs/scoreRule" },
+        "progress": { "$ref": "#/$defs/progressRule" }
+      }
+    },
+    "completionRule": {
+      "type": "object",
+      "required": ["rule"],
+      "additionalProperties": false,
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": [
+            "all-pages-viewed",
+            "pages-viewed",
+            "required-interactions-completed",
+            "required-interactions-passed",
+            "manual"
+          ]
+        },
+        "threshold": {
+          "description": "Fraction of pages (0–1, exclusive of 0) that must be viewed. Only valid with rule \"pages-viewed\".",
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "rule": { "const": "pages-viewed" } } },
+          "then": { "required": ["threshold"] },
+          "else": {
+            "not": { "required": ["threshold"] }
+          }
+        }
+      ]
+    },
+    "scoreRule": {
+      "type": "object",
+      "required": ["rule"],
+      "additionalProperties": false,
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": ["none", "single-interaction", "weighted-interactions"]
+        },
+        "source": {
+          "description": "Id of the interaction that supplies the score. Required for, and only valid with, rule \"single-interaction\".",
+          "$ref": "#/$defs/identifier"
+        },
+        "mastery": {
+          "description": "Pass threshold as a fraction (0–1). When set, the course reports passed/failed where the target supports it. Only valid with a rule that produces a score (\"single-interaction\" or \"weighted-interactions\").",
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "rule": { "const": "single-interaction" } } },
+          "then": { "required": ["source"] },
+          "else": { "not": { "required": ["source"] } }
+        },
+        {
+          "if": { "properties": { "rule": { "const": "none" } } },
+          "then": { "not": { "required": ["mastery"] } }
+        }
+      ]
+    },
+    "progressRule": {
+      "type": "object",
+      "required": ["rule"],
+      "additionalProperties": false,
+      "properties": {
+        "rule": {
+          "type": "string",
+          "enum": ["none", "pages-viewed"]
+        }
+      }
+    }
+  }
+}

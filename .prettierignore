@@ -1,0 +1,11 @@
+dist
+node_modules
+*.min.js
+package-lock.json
+
+# Human-authored reference material seeded into the repo — not subject to our
+# code style; leave verbatim so diffs stay meaningful.
+docs/PLAN.md
+tasks/
+specs/DECISION-1-manifest-schema.md
+specs/DECISION-2-tracking-semantics.md

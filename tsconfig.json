@@ -1,0 +1,9 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/runtime" },
+    { "path": "./packages/components" },
+    { "path": "./packages/cli" },
+    { "path": "./packages/mcp" }
+  ]
+}
