@@ -1,0 +1,23 @@
+<section>
+  <h1>Branching scenario</h1>
+  <oelt-branching id="scenario1" start="n1">
+    <script type="application/json">
+      {
+        "nodes": {
+          "n1": {
+            "text": "<p>A colleague asks for your password. You…</p>",
+            "choices": [
+              { "label": "Share it", "to": "bad", "value": "share" },
+              { "label": "Refuse and report it", "to": "good", "value": "refuse" }
+            ]
+          },
+          "good": { "text": "<p>Right call.</p>", "end": "passed" },
+          "bad": {
+            "text": "<p>That exposes credentials.</p>",
+            "choices": [{ "label": "Try again", "to": "n1", "value": "retry" }]
+          }
+        }
+      }
+    </script>
+  </oelt-branching>
+</section>

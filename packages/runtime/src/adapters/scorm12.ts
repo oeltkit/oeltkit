@@ -68,6 +68,7 @@ export function createScorm12Adapter(emit: Emit): Adapter {
         `cmi.interactions.${n}.result`,
         r.result === "passed" ? "correct" : r.result === "failed" ? "wrong" : "neutral",
       );
+      if (r.response != null) set(`cmi.interactions.${n}.student_response`, r.response);
       emit({ type: "interaction", id: r.id, result: r.result, scaled: r.score ?? null });
     },
 

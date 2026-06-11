@@ -62,6 +62,14 @@ export function boot(manifest: CourseManifest, options: BootOptions = {}): OeltR
     async start() {
       if (started) return;
       started = true;
+      // Components emit `oelt-interaction`; the runtime maps it to tracking
+      // (base.md §3). One delegated listener forwards to the engine.
+      if (typeof document !== "undefined") {
+        document.addEventListener("oelt-interaction", (e) => {
+          const detail = (e as CustomEvent).detail as InteractionReport | undefined;
+          if (detail?.id) engine.recordInteraction(detail);
+        });
+      }
       await adapter.start();
       // Suspend is only readable after the adapter is initialized.
       state.hydrate();

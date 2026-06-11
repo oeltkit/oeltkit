@@ -66,6 +66,8 @@ export interface InteractionReport {
   type?: string;
   result: InteractionResult;
   score?: number;
+  /** Learner response, recorded in cmi.interactions / the xAPI statement. */
+  response?: string;
 }
 
 /**

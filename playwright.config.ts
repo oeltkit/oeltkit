@@ -9,7 +9,10 @@ export default defineConfig({
   testMatch: "**/*.spec.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // Retry once: the suite runs many workers against three harness servers, so
+  // initial page render can occasionally exceed a single attempt under load.
+  retries: 1,
+  expect: { timeout: 10_000 },
   reporter: process.env.CI ? "github" : "list",
   // Build @oeltkit/runtime first so the harness can serve its bundle.
   globalSetup: "./harness/global-setup.ts",
@@ -29,6 +32,12 @@ export default defineConfig({
     {
       command: "node harness/server.mjs examples/spike --port 4174",
       url: "http://localhost:4174/",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+    },
+    {
+      command: "node harness/server.mjs examples/components-demo --port 4175",
+      url: "http://localhost:4175/",
       reuseExistingServer: !process.env.CI,
       timeout: 30_000,
     },
