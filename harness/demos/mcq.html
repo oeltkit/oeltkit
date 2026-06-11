@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oelt-mcq demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>oelt-mcq</h1>
+
+      <oelt-mcq id="mcq-single" mode="single" key="b">
+        <p slot="prompt">Which statement is true?</p>
+        <oelt-option value="a">OELT wires each LMS by hand.</oelt-option>
+        <oelt-option value="b">OELT maps one model to four targets.</oelt-option>
+        <oelt-option value="c">OELT requires a build step.</oelt-option>
+        <p slot="correct">Correct — one model, four targets.</p>
+        <p slot="incorrect">Not quite — review the docs.</p>
+      </oelt-mcq>
+
+      <oelt-mcq id="mcq-multi" mode="multiple" key="a c">
+        <p slot="prompt">Select every accessible practice (choose all that apply).</p>
+        <oelt-option value="a">Captions on video</oelt-option>
+        <oelt-option value="b">Color-only error states</oelt-option>
+        <oelt-option value="c">Full keyboard operation</oelt-option>
+      </oelt-mcq>
+
+      <h2>Emitted interactions</h2>
+      <ul id="events"></ul>
+    </main>
+    <script>
+      addEventListener("oelt-interaction", (e) => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(e.detail);
+        document.getElementById("events").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

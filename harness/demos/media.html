@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oelt-media demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>oelt-media</h1>
+
+      <h2>With captions + transcript (renders)</h2>
+      <oelt-media id="media-ok" threshold="0.9">
+        <video controls preload="metadata" width="320">
+          <track kind="captions" src="/demos/captions.vtt" srclang="en" label="English" default />
+        </video>
+        <div slot="transcript">
+          <p>Welcome to the course. Accessibility is built in.</p>
+        </div>
+      </oelt-media>
+
+      <h2>Missing captions/transcript (gate refuses)</h2>
+      <oelt-media id="media-bad">
+        <video controls width="320"></video>
+      </oelt-media>
+
+      <h2>Emitted interactions</h2>
+      <ul id="events"></ul>
+    </main>
+    <script>
+      addEventListener("oelt-interaction", (e) => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(e.detail);
+        document.getElementById("events").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

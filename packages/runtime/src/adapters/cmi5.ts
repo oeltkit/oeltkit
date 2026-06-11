@@ -179,6 +179,7 @@ export function createCmi5Adapter(emit: Emit): Adapter {
       send("answered", {
         success: r.result === "passed",
         ...(r.score != null ? { score: { scaled: r.score } } : {}),
+        ...(r.response != null ? { response: r.response } : {}),
       });
       emit({ type: "interaction", id: r.id, result: r.result, scaled: r.score ?? null });
     },

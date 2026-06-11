@@ -1,0 +1,33 @@
+{
+  "oelt": "0.1",
+  "id": "org.oeltkit.components-demo",
+  "title": "Components Demo",
+  "lang": "en",
+  "targets": ["scorm12", "scorm2004", "cmi5", "web"],
+  "structure": [
+    {
+      "id": "m1",
+      "title": "Components",
+      "pages": [
+        {
+          "id": "p-mcq",
+          "title": "Multiple choice",
+          "src": "pages/mcq.html",
+          "interactions": [{ "id": "mcq1", "type": "choice", "required": true }]
+        },
+        {
+          "id": "p-branching",
+          "title": "Branching scenario",
+          "src": "pages/branching.html",
+          "interactions": [{ "id": "scenario1", "type": "sequencing" }]
+        },
+        {
+          "id": "p-media",
+          "title": "Media",
+          "src": "pages/media.html",
+          "interactions": [{ "id": "media1", "type": "media" }]
+        }
+      ]
+    }
+  ]
+}

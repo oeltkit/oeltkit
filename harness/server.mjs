@@ -25,6 +25,8 @@ const ROOT = resolve(HERE, "..");
 const CLIENT_DIR = join(HERE, "client");
 const STATE_DIR = join(HERE, ".state");
 const RUNTIME_DIR = join(ROOT, "packages", "runtime", "dist");
+const COMPONENTS_DIR = join(ROOT, "packages", "components", "dist");
+const DEMOS_DIR = join(HERE, "demos");
 
 // ── CLI args ────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
@@ -143,6 +145,14 @@ const server = createServer(async (req, res) => {
         return send(res, 503, "Runtime not built — run `npm run build -w @oeltkit/runtime`");
       }
       return serveStatic(res, RUNTIME_DIR, path.slice("/runtime/".length));
+    }
+    // Built @oeltkit/components bundle.
+    if (path.startsWith("/components/")) {
+      return serveStatic(res, COMPONENTS_DIR, path.slice("/components/".length));
+    }
+    // Standalone component demo pages (harness/demos/<name>.html).
+    if (path.startsWith("/demos/")) {
+      return serveStatic(res, DEMOS_DIR, path.slice("/demos/".length));
     }
 
     // Harness client assets.

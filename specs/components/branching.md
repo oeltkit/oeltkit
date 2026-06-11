@@ -54,7 +54,7 @@ The default slot holds the inline JSON `<script>` (not rendered). Parts: `::part
 ## 5. Events
 
 - On each choice (when `emit=each-choice`): `oelt-interaction` `{ id, type:"sequencing", result:"completed", response: "<fromNode>:<choice.value>" }`. Mid-scenario choices report `completed` (a step taken), not pass/fail.
-- On reaching a terminal node: `{ id, type:"sequencing", result: node.end, score: node.end==="passed"?1 : node.end==="failed"?0 : undefined, response: "<path>" }` where `<path>` is the ordered list of node ids visited (joined by `>`).
+- On reaching a terminal node: `{ id, type:"sequencing", result: node.end, score: node.end==="passed"?1 : node.end==="failed"?0 : undefined, response: "<visited>" }` where `<visited>` is the visited node ids (joined by `>`). Ordered step-by-step analytics come from the per-choice interactions above, which the LRS retains; suspend stores only the bounded visited-set (OQ-002).
 
 ## 6. Keyboard
 
@@ -76,7 +76,7 @@ No arrow-key hijacking; the choice list is buttons in document order.
 
 ## 8. State
 
-Key: the element id. Value: `{ node: string, path: string[] }` — current node id and the visited path (ids only). **Max 256 bytes** (path of ≤ ~30 short node ids). On resume, restore `node` and re-render it without re-emitting prior interactions. If the stored node id is absent from the (possibly edited) scenario, fall back to `start` and clear the path.
+Key: the element id. Value: `{ node: string, seen: string[] }` — current node id and the visited-set (unique node ids; per OQ-002, bounded by node count, not loop count). **Max 256 bytes.** On resume, restore `node` and re-render it without re-emitting prior interactions. If the stored node id is absent from the (possibly edited) scenario, fall back to `start` and clear `seen`.
 
 ## 9. Tracking mapping
 
@@ -90,4 +90,4 @@ Recorded as a sequencing interaction (`cmi.interactions` type `sequencing` / xAP
 
 ## 11. Open questions
 
-- **Cycle/path-length bound vs the 256-byte state cap:** scenarios with loops (e.g. "try again") can grow the stored path. Tracked as [**OQ-002**](../OPEN-QUESTIONS.md) — resolve before implementing this component.
+- **Cycle/path-length bound:** resolved — [OQ-002](../OPEN-QUESTIONS.md) chose current-node + visited-set with per-choice interactions for ordered analytics (§5, §8).

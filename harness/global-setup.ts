@@ -5,5 +5,5 @@
 import { execSync } from "node:child_process";
 
 export default function globalSetup(): void {
-  execSync("npm run build -w @oeltkit/runtime", { stdio: "inherit" });
+  execSync("npm run build -w @oeltkit/runtime -w @oeltkit/components", { stdio: "inherit" });
 }
