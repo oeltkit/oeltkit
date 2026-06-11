@@ -1,0 +1,124 @@
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { scorm12Manifest, cmi5Xml } from "./lib/generators.js";
+import { validateCourse, type CourseManifest, type LoadedCourse } from "./lib/course.js";
+
+const base = (over: Partial<CourseManifest> = {}): CourseManifest => ({
+  oelt: "0.1",
+  id: "org.oelt.test",
+  title: "Test & <Course>",
+  lang: "en",
+  targets: ["scorm12"],
+  structure: [{ id: "m1", title: "M1", pages: [{ id: "p1", title: "P1", src: "pages/p1.html" }] }],
+  ...over,
+});
+
+describe("manifest generation", () => {
+  it("scorm12: SCO resource, version 1.2, XML-escaped title", () => {
+    const xml = scorm12Manifest(base());
+    expect(xml).toContain('adlcp:scormtype="sco"');
+    expect(xml).toContain("<schemaversion>1.2</schemaversion>");
+    expect(xml).toContain("Test &amp; &lt;Course&gt;"); // escaped
+  });
+
+  it("cmi5: moveOn + masteryScore derive from the tracking rules", () => {
+    const withMastery = cmi5Xml(
+      base({ tracking: { score: { rule: "weighted-interactions", mastery: 0.8 } } }),
+    );
+    expect(withMastery).toContain('moveOn="CompletedAndPassed"');
+    expect(withMastery).toContain('masteryScore="0.8"');
+    const without = cmi5Xml(base());
+    expect(without).toContain('moveOn="Completed"');
+    expect(without).not.toContain("masteryScore");
+  });
+});
+
+describe("validateCourse cross-checks", () => {
+  let dir: string;
+  beforeAll(() => {
+    dir = mkdtempSync(join(tmpdir(), "oelt-cli-"));
+    mkdirSync(join(dir, "pages"));
+    writeFileSync(join(dir, "pages", "good.html"), '<oelt-mcq id="q1"></oelt-mcq>');
+    writeFileSync(join(dir, "pages", "missing.html"), "<p>no interaction element here</p>");
+    writeFileSync(
+      join(dir, "pages", "media-bad.html"),
+      '<oelt-media id="m1"><video controls></video></oelt-media>',
+    );
+  });
+  afterAll(() => rmSync(dir, { recursive: true, force: true }));
+
+  const load = (course: CourseManifest): LoadedCourse => ({ dir, course });
+  const codes = (c: CourseManifest) => validateCourse(load(c)).map((f) => f.code);
+
+  it("passes when a declared interaction exists in the page HTML", () => {
+    const c = base({
+      structure: [
+        {
+          id: "m1",
+          title: "M1",
+          pages: [
+            {
+              id: "p1",
+              title: "P1",
+              src: "pages/good.html",
+              interactions: [{ id: "q1", type: "choice" }],
+            },
+          ],
+        },
+      ],
+    });
+    expect(validateCourse(load(c))).toEqual([]);
+  });
+
+  it("flags a declared interaction missing from the page HTML", () => {
+    const c = base({
+      structure: [
+        {
+          id: "m1",
+          title: "M1",
+          pages: [
+            {
+              id: "p1",
+              title: "P1",
+              src: "pages/missing.html",
+              interactions: [{ id: "q1", type: "choice" }],
+            },
+          ],
+        },
+      ],
+    });
+    expect(codes(c)).toContain("interaction-missing");
+  });
+
+  it("flags <oelt-media> without captions or a transcript", () => {
+    const c = base({
+      structure: [
+        { id: "m1", title: "M1", pages: [{ id: "p1", title: "P1", src: "pages/media-bad.html" }] },
+      ],
+    });
+    expect(codes(c)).toContain("media-no-alt");
+  });
+
+  it("flags required-interactions completion with no required interaction", () => {
+    const c = base({
+      tracking: { completion: { rule: "required-interactions-passed" } },
+      structure: [
+        {
+          id: "m1",
+          title: "M1",
+          pages: [
+            {
+              id: "p1",
+              title: "P1",
+              src: "pages/good.html",
+              interactions: [{ id: "q1", type: "choice" }],
+            },
+          ],
+        },
+      ],
+    });
+    expect(codes(c)).toContain("no-required-interaction");
+  });
+});

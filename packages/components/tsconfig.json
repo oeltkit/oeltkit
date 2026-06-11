@@ -4,6 +4,11 @@
     "rootDir": "src",
     "outDir": "dist/esm"
   },
-  "references": [{ "path": "../runtime" }],
-  "include": ["src"]
+  "references": [
+    {
+      "path": "../runtime"
+    }
+  ],
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts"]
 }

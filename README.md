@@ -6,12 +6,19 @@ An open source, **LLM-first** e-learning toolkit: runtime + web components + pac
 
 ## Status
 
-Phase 0 — spec & spike. The two foundational decisions are made and written up as normative specs:
+Phase 0 — the full author→package loop works end to end; the human-run exit gate (PLAN.md §8, Task 05 Part B) is the remaining step before Phase 1.
 
-- [`specs/manifest-v0.md`](specs/manifest-v0.md) + [`specs/schema/course.schema.json`](specs/schema/course.schema.json) — the `course.json` contract (the highest-leverage artifact in the project).
-- [`specs/tracking-semantics.md`](specs/tracking-semantics.md) — how completion/score/progress project onto each target.
+- **Specs:** [`specs/manifest-v0.md`](specs/manifest-v0.md) + [`course.schema.json`](specs/schema/course.schema.json) (the `course.json` contract) and [`specs/tracking-semantics.md`](specs/tracking-semantics.md) (completion/score/progress → each target).
+- **Runtime** ([`@oeltkit/runtime`](packages/runtime)) — tracking, suspend state, navigation, four target adapters; one course → correct tracking in all four modes.
+- **Components** ([`@oeltkit/components`](packages/components)) — `<oelt-mcq>`, `<oelt-branching>`, `<oelt-media>` (beta, pending manual AT pass).
+- **CLI** ([`@oeltkit/cli`](packages/cli)) — `oelt new` / `validate` / `preview` / `package` (SCORM 1.2 · SCORM 2004 · cmi5 · web).
+- **Docs for LLMs** — [`docs/llms.txt`](docs/llms.txt) + [`docs/quickstart.md`](docs/quickstart.md).
 
-Implementation (runtime, components, packager, MCP server) is scaffolded but not yet built — see [`tasks/`](tasks/).
+Not yet built: the MCP server ([`@oeltkit/mcp`](packages/mcp) is scaffolding) and a default theme. See [`tasks/`](tasks/) and [`docs/PLAN.md`](docs/PLAN.md).
+
+```bash
+oelt new my-course && oelt package my-course --target scorm12   # → my-course-id-scorm12.zip
+```
 
 ## Repo layout
 
