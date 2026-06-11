@@ -34,6 +34,14 @@ When a spec is ambiguous, **stop and write the question here rather than guessin
 - **Blocking?:** No — adapters work and are tested in all four modes. This is a "confirm or revisit before Phase 1 hardening" question.
 - **Proposed default:** Keep zero-dep for SCORM (the content-side need is ~60 lines and `scorm-again` doesn't fit it). Reconsider `@xapi/cmi5` for cmi5 in Phase 1 if statement/State edge cases (attachments, batching, auth refresh) grow beyond the minimal client.
 
+### OQ-002 — `<oelt-branching>` loops vs the suspend-state cap
+
+- **Context:** [`components/branching.md`](./components/branching.md) §8; surfaced by Task 04 spec drafting.
+- **Question:** A scenario with cycles ("try again" returning to an earlier node) grows the stored visited `path`, which competes with the 256-byte component state cap and the overall 3 KB suspend budget.
+- **Options considered:** (a) store the full path (simple analytics, unbounded); (b) store a bounded last-N path (drops early history); (c) store current node + a visited-set (resume works, loses order); (d) disallow cycles in v0.
+- **Blocking?:** No — v0 can ship with the full-path approach and a documented cap; only affects loop-heavy scenarios.
+- **Proposed default:** (c) current node + visited-set for resume, plus emit each branch-take as an interaction (so ordered analytics live in the LRS, not in suspend). Confirm before implementing `branching`.
+
 ## Resolved
 
 _None yet._
