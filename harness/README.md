@@ -21,7 +21,7 @@ Open `/` and use the mode switcher, or jump straight to a mode: `/?mode=scorm12 
 
 The fake SCORM APIs live in the host window; course content in the preview iframe discovers them by walking `window.parent` — the real SCORM discovery rule. cmi5/web clients talk to the harness server endpoints.
 
-> **Note:** the content-side driver (`client/preview.js`) is a deliberately minimal harness _preview shim_ that implements only the zero-config default (all-pages-viewed ⇒ completed). It is **not** `@oeltkit/runtime`. Task 03 swaps the real runtime in behind the same adapter boundary; the harness (APIs, endpoints, panel, assertions) is what stays.
+> **Runtime integration:** `client/preview.js` boots the real **`@oeltkit/runtime`** (served as the IIFE bundle at `/runtime/oelt.min.js`) and renders the course around it. The runtime owns tracking, state, navigation, and adapter selection; the harness just renders pages and forwards the runtime's event stream to the panel for the cmi5/web modes (SCORM is observed directly through the fake API's logging). **Run `npm run build` first** so the bundle exists (the Playwright suite builds it automatically via `global-setup.ts`).
 
 ## Inspector panel
 
@@ -70,7 +70,10 @@ test("my interaction reports correctly", async ({ page }) => {
 
 ## Tests
 
-`npm run test:a11y` (Playwright) runs `harness/smoke.spec.ts`: loads `examples/minimal` in all four modes, asserts the course renders, and asserts the initialize→complete→terminate lifecycle in each tracking mode. The Playwright config starts the harness automatically (`webServer`).
+`npm run test:a11y` (Playwright) runs two suites; the config starts the harness automatically (two instances: `examples/minimal` on 4173, `examples/spike` on 4174) and builds the runtime first via `global-setup.ts`:
+
+- `smoke.spec.ts` — `examples/minimal` in all four modes: renders + initialize→complete→terminate.
+- `spike.spec.ts` — `examples/spike` driven by the real runtime in all four modes: fresh-launch status, pass-quiz completion/score (incl. the SCORM 1.2 collapse), suspend/resume restores page + state without downgrading, and oversized-state rejection.
 
 ## State
 

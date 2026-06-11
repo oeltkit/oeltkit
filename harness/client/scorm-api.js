@@ -84,16 +84,23 @@ export function makeScormApi(version, harness, seed) {
           "cmi.score.max",
         ].includes(key));
 
-  async function persist() {
-    try {
-      await fetch(`/api/state?mode=${harness.mode}`, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(model),
-      });
-    } catch {
-      /* best-effort, like a real LMS commit */
-    }
+  // Serialize commits so concurrent PUTs can't land out of order and leave the
+  // state file stale (the model is snapshotted at enqueue time).
+  let persistChain = Promise.resolve();
+  function persist() {
+    const snapshot = JSON.stringify(model);
+    persistChain = persistChain.then(async () => {
+      try {
+        await fetch(`/api/state?mode=${harness.mode}`, {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: snapshot,
+        });
+      } catch {
+        /* best-effort, like a real LMS commit */
+      }
+    });
+    return persistChain;
   }
 
   const ok = (op, key, value, result) => {

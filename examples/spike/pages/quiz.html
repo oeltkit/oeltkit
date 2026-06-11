@@ -1,0 +1,31 @@
+<section>
+  <h1>Quiz</h1>
+  <p>
+    A placeholder interaction standing in for a real <code>&lt;oelt-mcq&gt;</code>. The declared
+    interaction id <code>quiz1</code> matches this element's id.
+  </p>
+
+  <fieldset id="quiz1">
+    <legend>Is OELT's tracking layer per-target?</legend>
+    <button
+      type="button"
+      onclick="
+        oelt.track.interaction({ id: 'quiz1', type: 'quiz', result: 'passed', score: 1 });
+        document.getElementById('quiz-feedback').textContent = 'Recorded: passed (score 1.0)';
+      "
+    >
+      No — one model, four targets (correct)
+    </button>
+    <button
+      type="button"
+      onclick="
+        oelt.track.interaction({ id: 'quiz1', type: 'quiz', result: 'failed', score: 0.5 });
+        document.getElementById('quiz-feedback').textContent = 'Recorded: failed (score 0.5)';
+      "
+    >
+      Yes, you wire each LMS by hand (incorrect)
+    </button>
+  </fieldset>
+
+  <p id="quiz-feedback" role="status" aria-live="polite"></p>
+</section>

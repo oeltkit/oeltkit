@@ -11,16 +11,27 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? "github" : "list",
+  // Build @oeltkit/runtime first so the harness can serve its bundle.
+  globalSetup: "./harness/global-setup.ts",
   use: {
     baseURL: "http://localhost:4173",
     trace: "on-first-retry",
   },
-  // The harness itself is the web server under test; it serves examples/minimal.
-  webServer: {
-    command: "node harness/server.mjs examples/minimal --port 4173",
-    url: "http://localhost:4173/",
-    reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
-  },
+  // The harness is the server under test. Two instances: minimal (smoke) on
+  // 4173, spike (runtime) on 4174. spike.spec.ts uses absolute 4174 URLs.
+  webServer: [
+    {
+      command: "node harness/server.mjs examples/minimal --port 4173",
+      url: "http://localhost:4173/",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+    },
+    {
+      command: "node harness/server.mjs examples/spike --port 4174",
+      url: "http://localhost:4174/",
+      reuseExistingServer: !process.env.CI,
+      timeout: 30_000,
+    },
+  ],
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
 });
