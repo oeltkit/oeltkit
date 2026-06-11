@@ -1,0 +1,25 @@
+{
+  "name": "@oeltkit/runtime",
+  "version": "0.0.0",
+  "description": "OELT runtime core — tracking, state, navigation, and accessibility services. Bundled into every course.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "./dist/esm/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/esm/index.d.ts",
+      "import": "./dist/esm/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build:esm": "tsc -p tsconfig.json",
+    "build:bundle": "esbuild src/index.ts --bundle --format=iife --global-name=oelt --minify --sourcemap --outfile=dist/oelt.min.js",
+    "build": "npm run build:esm && npm run build:bundle",
+    "clean": "rm -rf dist"
+  }
+}

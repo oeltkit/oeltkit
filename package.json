@@ -1,0 +1,42 @@
+{
+  "name": "oeltkit-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Open E-Learning Toolkit — LLM-first runtime, components, packager, validators, and MCP server for standards-compliant e-learning.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:a11y": "playwright test",
+    "validate:examples": "node test/validate-examples.mjs",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "typecheck": "tsc -b",
+    "prepare": "husky || true"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.1",
+    "@commitlint/cli": "^19.6.1",
+    "@commitlint/config-conventional": "^19.6.0",
+    "@eslint/js": "^9.17.0",
+    "@playwright/test": "^1.49.1",
+    "@types/node": "^22.10.2",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.17.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.18.1",
+    "vitest": "^3.2.4"
+  }
+}
