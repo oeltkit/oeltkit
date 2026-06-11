@@ -1,0 +1,243 @@
+# OELTKit — Open E-Learning Toolkit (LLM guide)
+
+OELTKit turns a single course tree into SCORM 1.2 / SCORM 2004 / cmi5 / standalone-web
+packages. You (the LLM) author a `course.json` manifest plus free-HTML pages; the toolkit
+handles tracking, accessibility plumbing, and packaging. Write bespoke HTML freely — only the
+chrome (tracking, navigation, a11y, packaging) is standardized.
+
+This file is self-contained: everything needed to scaffold, author, validate, and package a
+course. Naming: npm packages are `@oeltkit/*`; everything author-facing is `oelt`
+(CLI `oelt`, elements `<oelt-*>`, runtime global `oelt`, CSS tokens `--oelt-*`).
+
+## Workflow
+
+```bash
+oelt new my-course                       # scaffold course.json + pages/p1.html
+# …edit course.json and pages/*.html…
+oelt validate my-course                  # schema + a11y + tracking checks (--json for machine output)
+oelt preview my-course                   # local fake-LMS harness with a live tracking panel
+oelt package my-course --target scorm12  # → my-course-id-scorm12.zip  (also: scorm2004 | cmi5 | web)
+```
+
+`oelt package` refuses to build if `oelt validate` finds errors. Fix them first.
+
+## course.json (the manifest)
+
+One JSON document is the source of truth. Model: structured shell + free-HTML body. Pages are
+HTML files referenced by `src`; a page MAY declare its tracked `interactions` so tracking is
+machine-checkable without parsing HTML.
+
+```json
+{
+  "oelt": "0.1",
+  "id": "com.example.data-privacy",
+  "title": "Data Privacy Essentials",
+  "lang": "en",
+  "targets": ["scorm12", "scorm2004", "cmi5", "web"],
+  "theme": "./theme/tokens.css",
+  "tracking": {
+    "completion": { "rule": "required-interactions-passed" },
+    "score": { "rule": "weighted-interactions", "mastery": 0.8 },
+    "progress": { "rule": "pages-viewed" }
+  },
+  "structure": [
+    {
+      "id": "m1",
+      "title": "Foundations",
+      "pages": [
+        { "id": "intro", "title": "Why privacy matters", "src": "pages/intro.html" },
+        {
+          "id": "quiz",
+          "title": "Final quiz",
+          "src": "pages/quiz.html",
+          "interactions": [{ "id": "final-quiz", "type": "quiz", "weight": 1, "required": true }]
+        }
+      ]
+    }
+  ]
+}
+```
+
+Rules:
+
+- `id`: reverse-DNS, lowercase, e.g. `com.example.course-name`. All module/page/interaction ids
+  must be unique across the whole course and be valid HTML id tokens (`^[A-Za-z][A-Za-z0-9_-]*$`).
+- `lang`: BCP-47 (required — drives the document language for accessibility).
+- `targets`: any non-empty subset of `scorm12`, `scorm2004`, `cmi5`, `web`.
+- `tracking` is optional. Omit it for the zero-config default: complete when all pages are viewed,
+  no score. Each interaction's `id` MUST match the `id` of an element in that page's HTML.
+- Unknown keys are rejected — no typos.
+
+### Tracking vocabulary (closed set)
+
+completion `rule`:
+
+- `all-pages-viewed` (default)
+- `pages-viewed` — requires `threshold` (0–1), e.g. view 80% of pages
+- `required-interactions-completed` — every `required: true` interaction answered
+- `required-interactions-passed` — every `required: true` interaction passed
+- `manual` — author code calls `oelt.track.complete()`
+
+score `rule`:
+
+- `none` (default)
+- `single-interaction` — requires `source` (an interaction id)
+- `weighted-interactions` — weighted mean using each interaction's `weight`
+- `mastery` (0–1) may be set on a scoring rule to decide pass/fail.
+
+progress `rule`: `pages-viewed` (default) | `none`.
+
+**SCORM 1.2 collapse rule:** SCORM 1.2 has one status field. If a score rule + `mastery` are
+defined, the course reports `passed`/`failed`; otherwise `completed`/`incomplete`. (SCORM 2004 and
+cmi5 report completion and success separately.) You don't implement this — the runtime does.
+
+## Authoring pages
+
+A page (`src`) is a free HTML fragment (no `<html>`/`<body>` wrapper — just the content). Use any
+HTML/CSS/SVG/JS. Use OELT components for tracked, accessible interactions. Keep one `<h1>` per page.
+
+### Components (`<oelt-*>`)
+
+The runtime auto-wires component interactions to tracking — you write no tracking code in markup.
+
+**Multiple choice / multiple response — `<oelt-mcq>`**
+
+```html
+<oelt-mcq id="final-quiz" mode="single" key="b">
+  <p slot="prompt">Which standard is recommended for new content?</p>
+  <oelt-option value="a">SCORM 1.2 only</oelt-option>
+  <oelt-option value="b">cmi5</oelt-option>
+  <oelt-option value="c">AICC</oelt-option>
+  <p slot="correct">Correct — cmi5 is the modern target.</p>
+  <p slot="incorrect">Not quite — cmi5 is recommended for new content.</p>
+</oelt-mcq>
+```
+
+- `mode="multiple"` for checkboxes; `key` then lists every correct value (space-separated).
+- `manual-grade` (omit `key`) for ungraded polls.
+- The element `id` must equal the manifest interaction id.
+
+**Branching scenario — `<oelt-branching>`**
+
+```html
+<oelt-branching id="scenario1" start="n1">
+  <script type="application/json">
+    {
+      "nodes": {
+        "n1": {
+          "text": "<p>A colleague asks for your password. You…</p>",
+          "choices": [
+            { "label": "Share it", "to": "bad", "value": "share" },
+            { "label": "Refuse and report it", "to": "good", "value": "refuse" }
+          ]
+        },
+        "good": { "text": "<p>Correct call.</p>", "end": "passed" },
+        "bad": { "text": "<p>That exposes credentials.</p>", "choices": [{ "label": "Back", "to": "n1", "value": "back" }] }
+      }
+    }
+  </script>
+</oelt-branching>
+```
+
+A node with `end` (`passed`/`failed`/`completed`) is terminal. Or load the graph with
+`src="scenarios/x.json"` instead of the inline `<script>`.
+
+**Media — `<oelt-media>`**
+
+```html
+<oelt-media id="intro-video" threshold="0.9">
+  <video controls preload="metadata" width="480">
+    <source src="media/intro.mp4" type="video/mp4" />
+    <track kind="captions" src="media/intro.en.vtt" srclang="en" label="English" default />
+  </video>
+  <div slot="transcript"><p>Full transcript…</p></div>
+</oelt-media>
+```
+
+REQUIRED: video needs a captions `<track>` or a `transcript` slot; audio needs a `transcript`
+slot. Without one, the component refuses to render and `oelt validate` fails.
+
+### Bespoke interactions
+
+For a one-off interaction, emit the same event the components use; the runtime forwards it:
+
+```html
+<button onclick="oelt.track.interaction({ id: 'final-quiz', type: 'quiz', result: 'passed', score: 1 })">
+  Submit
+</button>
+```
+
+`result` ∈ `passed` | `failed` | `completed`; `score` is 0–1.
+
+## Runtime API (global `oelt`, available after the page loads)
+
+- `oelt.track.complete()` — mark complete (with the `manual` rule).
+- `oelt.track.score(0.85)` — report a 0–1 score.
+- `oelt.track.progress(0.4)` — report 0–1 progress.
+- `oelt.track.interaction({ id, type, result, score?, response? })` — report an interaction.
+- `oelt.state.get(key)` / `oelt.state.set(key, value)` — suspend/resume key-value store. Budget
+  3 KB total; oversized writes throw. Keys starting with `__` are reserved.
+- `oelt.nav.pages`, `oelt.nav.current()`, `oelt.nav.go(i)`, `oelt.nav.next()`, `oelt.nav.prev()`.
+
+Identical content runs on every target; the runtime auto-detects the LMS at launch.
+
+## Accessibility (enforced)
+
+- Use native elements (`<button>`, `<input>`, `<fieldset>`/`<legend>`); avoid hand-rolled ARIA.
+- Every page needs a logical heading order starting at `<h1>`.
+- Media must have captions or a transcript (validator-enforced).
+- Don't convey meaning by color alone; ensure keyboard operability and visible focus.
+- Components are accessible by construction; bespoke content is your responsibility — `oelt validate`
+  and the components help, but follow these rules.
+
+## Validate & package
+
+`oelt validate <dir> [--json]` checks: schema, id uniqueness, declared interactions exist in the
+page HTML, media has captions/transcript, and tracking is reachable (e.g. a `required-interactions-*`
+rule has a required interaction; a `single-interaction` score names a real interaction).
+
+`oelt package <dir> --target <scorm12|scorm2004|cmi5|web> [--out file.zip]` generates the manifest
+(`imsmanifest.xml` / `cmi5.xml`) and a self-contained zip. Never hand-edit those manifests — they
+are generated from `course.json`.
+
+## Complete minimal example
+
+`course.json`:
+
+```json
+{
+  "oelt": "0.1",
+  "id": "com.example.hello",
+  "title": "Hello OELT",
+  "lang": "en",
+  "targets": ["scorm12", "web"],
+  "tracking": { "completion": { "rule": "required-interactions-passed" }, "score": { "rule": "single-interaction", "source": "q1", "mastery": 0.8 } },
+  "structure": [
+    { "id": "m1", "title": "Module 1", "pages": [
+      { "id": "intro", "title": "Intro", "src": "pages/intro.html" },
+      { "id": "check", "title": "Check", "src": "pages/check.html", "interactions": [{ "id": "q1", "type": "choice", "required": true }] }
+    ] }
+  ]
+}
+```
+
+`pages/intro.html`:
+
+```html
+<section><h1>Intro</h1><p>Welcome.</p></section>
+```
+
+`pages/check.html`:
+
+```html
+<section>
+  <h1>Check</h1>
+  <oelt-mcq id="q1" mode="single" key="b">
+    <p slot="prompt">Is OELT tracking per-target?</p>
+    <oelt-option value="a">Yes</oelt-option>
+    <oelt-option value="b">No — one model, four targets</oelt-option>
+  </oelt-mcq>
+</section>
+```
+
+Then: `oelt validate . && oelt package . --target scorm12`.
