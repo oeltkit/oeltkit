@@ -1,0 +1,28 @@
+{
+  "oelt": "0.1",
+  "id": "org.oeltkit.spike",
+  "title": "Tracking Spike",
+  "lang": "en",
+  "targets": ["scorm12", "scorm2004", "cmi5", "web"],
+  "structure": [
+    {
+      "id": "m1",
+      "title": "Module 1",
+      "pages": [
+        { "id": "intro", "title": "Introduction", "src": "pages/intro.html" },
+        { "id": "content", "title": "Key idea", "src": "pages/content.html" },
+        {
+          "id": "quiz",
+          "title": "Quiz",
+          "src": "pages/quiz.html",
+          "interactions": [{ "id": "quiz1", "type": "quiz", "weight": 1, "required": true }]
+        }
+      ]
+    }
+  ],
+  "tracking": {
+    "completion": { "rule": "required-interactions-passed" },
+    "score": { "rule": "weighted-interactions", "mastery": 0.8 },
+    "progress": { "rule": "pages-viewed" }
+  }
+}

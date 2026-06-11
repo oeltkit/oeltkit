@@ -21,8 +21,10 @@ import { extname, join, resolve, normalize, basename } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = fileURLToPath(new URL(".", import.meta.url));
+const ROOT = resolve(HERE, "..");
 const CLIENT_DIR = join(HERE, "client");
 const STATE_DIR = join(HERE, ".state");
+const RUNTIME_DIR = join(ROOT, "packages", "runtime", "dist");
 
 // ── CLI args ────────────────────────────────────────────────────────────────
 const argv = process.argv.slice(2);
@@ -134,6 +136,14 @@ const server = createServer(async (req, res) => {
     if (path === "/" || path === "/index.html") return serveStatic(res, CLIENT_DIR, "host.html");
     if (path === "/preview") return serveStatic(res, CLIENT_DIR, "preview.html");
     if (path === "/harness/course.json") return serveStatic(res, COURSE_DIR, "course.json");
+
+    // Built @oeltkit/runtime bundle (IIFE — exposes global `oelt`).
+    if (path.startsWith("/runtime/")) {
+      if (!existsSync(join(RUNTIME_DIR, "oelt.min.js"))) {
+        return send(res, 503, "Runtime not built — run `npm run build -w @oeltkit/runtime`");
+      }
+      return serveStatic(res, RUNTIME_DIR, path.slice("/runtime/".length));
+    }
 
     // Harness client assets.
     if (path.startsWith("/harness/"))

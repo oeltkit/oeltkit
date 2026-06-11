@@ -1,138 +1,77 @@
 // Course preview client. Runs in the preview iframe.
 //
-// Renders the course (linear nav over modules → pages) and drives a MINIMAL
-// tracking lifecycle through a per-mode adapter. This is deliberately a harness
-// preview shim, NOT @oeltkit/runtime — it implements only the zero-config
-// default (all-pages-viewed ⇒ completed; no mastery ⇒ "completed", per the
-// SCORM 1.2 collapse rule in tracking-semantics.md §4.2) so the harness is
-// exercisable end-to-end before the real runtime exists. Task 03 swaps the
-// real runtime in behind the same adapter boundary.
-
-import { makeCmi5Client } from "./cmi5-client.js";
+// Boots the REAL @oeltkit/runtime (loaded as the IIFE global `oelt` by
+// preview.html) and renders the course around it. The runtime owns tracking,
+// state, navigation, and adapter selection; this file is just the harness view:
+// it renders the current page, wires nav/exit to oelt.*, and forwards the
+// runtime's event stream to the inspector panel for the cmi5/web modes (the
+// SCORM modes are observed directly through the fake API's own logging).
 
 const params = new URLSearchParams(location.search);
 const mode = params.get("mode") ?? "web";
+const panel = () => window.parent.__oelt_harness;
 
-/** Walk the window chain for a SCORM API handle (the real discovery rule). */
-function findScormApi(name) {
-  let w = window;
-  for (let i = 0; i < 10 && w; i++) {
-    if (w[name]) return w[name];
-    if (w.parent === w) break;
-    w = w.parent;
+// Map runtime events → panel entries for modes the fake SCORM API can't observe.
+function forwardToPanel(evt) {
+  if (mode !== "cmi5" && mode !== "web") return;
+  const h = panel();
+  if (!h) return;
+  switch (evt.type) {
+    case "statement":
+      h.push({
+        kind: "statement",
+        op: "POST statement",
+        verb: evt.verb,
+        scaled: evt.scaled,
+        result: "stored",
+      });
+      break;
+    case "info":
+      h.push({ kind: "info", op: "cmi5", result: evt.message });
+      break;
+    case "lifecycle":
+      h.push({ kind: "info", op: evt.op, result: evt.adapter });
+      break;
+    case "state":
+      if (mode === "web") h.setModel("suspend", evt.value);
+      h.push({
+        kind: "state",
+        op: mode === "web" ? "localStorage.set" : "PUT state",
+        key: evt.key,
+        value: evt.value,
+      });
+      break;
+    case "completion":
+      if (mode === "web") {
+        h.setModel("completion", evt.reported);
+        h.push({ kind: "call", op: "completion", value: evt.reported, result: "ok" });
+      }
+      break;
+    case "success":
+      if (mode === "web") h.setModel("success", evt.success);
+      break;
+    case "score":
+      if (mode === "web") h.setModel("score", evt.scaled);
+      break;
+    case "progress":
+      if (mode === "web") h.setModel("progress", evt.value);
+      break;
+    case "interaction":
+      h.push({ kind: "info", op: "interaction", key: evt.id, result: evt.result });
+      break;
   }
-  return null;
 }
 
-const report = (entry) => window.parent.__oelt_harness?.push(entry);
-
-// ── mode adapters ─────────────────────────────────────────────────────────────
-function makeAdapter() {
-  if (mode === "scorm12") {
-    const api = findScormApi("API");
-    return {
-      async init() {
-        if (!api) return report({ kind: "info", op: "init", error: "SCORM 1.2 API not found" });
-        api.LMSInitialize("");
-      },
-      complete() {
-        // No mastery defined ⇒ report completion, not success (collapse rule).
-        api?.LMSSetValue("cmi.core.lesson_status", "completed");
-        api?.LMSCommit("");
-      },
-      setSuspend(v) {
-        api?.LMSSetValue("cmi.suspend_data", v);
-      },
-      terminate() {
-        api?.LMSFinish("");
-      },
-    };
-  }
-  if (mode === "scorm2004") {
-    const api = findScormApi("API_1484_11");
-    return {
-      async init() {
-        if (!api) return report({ kind: "info", op: "init", error: "SCORM 2004 API not found" });
-        api.Initialize("");
-      },
-      complete() {
-        api?.SetValue("cmi.completion_status", "completed");
-        api?.Commit("");
-      },
-      setSuspend(v) {
-        api?.SetValue("cmi.suspend_data", v);
-      },
-      terminate() {
-        api?.Terminate("");
-      },
-    };
-  }
-  if (mode === "cmi5") {
-    const client = makeCmi5Client();
-    return {
-      async init() {
-        await client.start();
-      },
-      complete() {
-        client.completed();
-      },
-      setSuspend(v) {
-        void client.setSuspend(v);
-      },
-      terminate() {
-        client.terminated();
-      },
-    };
-  }
-  // web — localStorage + server JSON mirror, graceful no-LMS fallback.
-  const key = `oelt:web:${location.pathname}`;
-  return {
-    async init() {
-      report({ kind: "info", op: "web init", result: "standalone (localStorage)" });
-    },
-    complete() {
-      localStorage.setItem(key, JSON.stringify({ completion: "completed" }));
-      window.parent.__oelt_harness?.setModel("completion", "completed");
-      report({
-        kind: "call",
-        op: "localStorage.set",
-        key: "completion",
-        value: "completed",
-        result: "ok",
-      });
-      void fetch(`/api/state?mode=web`, {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ completion: "completed" }),
-      });
-    },
-    setSuspend(v) {
-      window.parent.__oelt_harness?.setModel("suspend", v);
-      report({ kind: "state", op: "localStorage.set", key: "suspend", value: v });
-    },
-    terminate() {
-      report({ kind: "info", op: "web terminate", result: "state persisted" });
-    },
-  };
-}
-
-// ── course rendering ──────────────────────────────────────────────────────────
 async function main() {
   const course = await (await fetch("/harness/course.json")).json();
-  const pages = course.structure.flatMap((m) =>
-    m.pages.map((pg) => ({ ...pg, moduleTitle: m.title })),
-  );
-  const viewed = new Set();
-  let idx = 0;
-  let completed = false;
-  let terminated = false;
 
-  const adapter = makeAdapter();
+  // Construct the runtime (auto-detects the target from the launch context).
+  const rt = window.oelt.boot(course);
 
   const root = document.getElementById("course-root");
   root.innerHTML = `
     <header class="c-head">
-      <div><strong>${course.title}</strong> <span class="c-mode">${mode}</span></div>
+      <div><strong>${course.title}</strong> <span class="c-mode">${rt.target}</span></div>
       <button id="c-exit" type="button">Exit course</button>
     </header>
     <nav class="c-toc" id="c-toc"></nav>
@@ -143,49 +82,41 @@ async function main() {
       <button id="c-next" type="button">Next ›</button>
     </footer>`;
 
+  const pages = rt.nav.pages;
   const toc = document.getElementById("c-toc");
   toc.innerHTML = pages
     .map((pg, i) => `<button data-i="${i}" type="button">${i + 1}. ${pg.title}</button>`)
     .join("");
   toc.addEventListener("click", (e) => {
     const i = e.target?.dataset?.i;
-    if (i != null) go(Number(i));
+    if (i != null) rt.nav.go(Number(i));
   });
+  document.getElementById("c-prev").addEventListener("click", () => rt.nav.prev());
+  document.getElementById("c-next").addEventListener("click", () => rt.nav.next());
+  document.getElementById("c-exit").addEventListener("click", () => rt.terminate());
+  window.addEventListener("pagehide", () => rt.terminate());
 
-  async function go(i) {
-    idx = Math.max(0, Math.min(pages.length - 1, i));
-    const pg = pages[idx];
+  async function render(index) {
+    const pg = pages[index];
     const html = await (await fetch(`/course/${pg.src}`)).text();
     const page = document.getElementById("c-page");
-    page.innerHTML = html;
+    page.innerHTML = html; // author HTML; inline oelt.* handlers run on interaction
     page.focus();
-    document.getElementById("c-pos").textContent = `${idx + 1} / ${pages.length}`;
-    document.getElementById("c-prev").disabled = idx === 0;
-    document.getElementById("c-next").disabled = idx === pages.length - 1;
-    toc.querySelectorAll("button").forEach((b, bi) => b.classList.toggle("active", bi === idx));
-    report({ kind: "info", op: "page-view", key: pg.id, result: pg.title });
-
-    viewed.add(pg.id);
-    if (!completed && viewed.size === pages.length) {
-      completed = true;
-      adapter.complete(); // zero-config default: all pages viewed ⇒ complete
-    }
+    document.getElementById("c-pos").textContent = `${index + 1} / ${pages.length}`;
+    document.getElementById("c-prev").disabled = index === 0;
+    document.getElementById("c-next").disabled = index === pages.length - 1;
+    toc.querySelectorAll("button").forEach((b, bi) => b.classList.toggle("active", bi === index));
   }
 
-  document.getElementById("c-prev").addEventListener("click", () => go(idx - 1));
-  document.getElementById("c-next").addEventListener("click", () => go(idx + 1));
-  function exit() {
-    if (terminated) return;
-    terminated = true;
-    adapter.terminate();
-  }
-  document.getElementById("c-exit").addEventListener("click", exit);
-  window.addEventListener("pagehide", exit);
+  // Subscribe BEFORE start() so the launch lifecycle's events are observed.
+  rt.on((evt) => {
+    if (evt.type === "page-change") void render(evt.index);
+    forwardToPanel(evt);
+  });
 
-  await adapter.init();
-  await go(0);
+  await rt.start();
 }
 
 main().catch((err) =>
-  report({ kind: "info", op: "preview-error", error: String(err?.message ?? err) }),
+  panel()?.push({ kind: "info", op: "preview-error", error: String(err?.message ?? err) }),
 );
