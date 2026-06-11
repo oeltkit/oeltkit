@@ -17,6 +17,7 @@
     "test:watch": "vitest",
     "test:a11y": "playwright test",
     "validate:examples": "node test/validate-examples.mjs",
+    "harness": "node harness/server.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "typecheck": "tsc -b",
