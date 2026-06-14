@@ -13,7 +13,13 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.conformance.json",
+    "build:mcpb": "node scripts/build-mcpb.mjs",
+    "conformance": "node dist/conformance/run.js",
     "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "@oeltkit/cli": "*"
   }
 }

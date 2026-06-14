@@ -10,7 +10,7 @@
  */
 
 import { mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { join, basename, resolve, dirname } from "node:path";
+import { join, basename, resolve } from "node:path";
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";

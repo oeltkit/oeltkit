@@ -220,6 +220,37 @@ title — suitable for displaying directly to the author or feeding back to an L
 (`imsmanifest.xml` / `cmi5.xml`) and a self-contained zip. Never hand-edit those manifests — they
 are generated from `course.json`.
 
+## Authoring via MCP (`@oeltkit/mcp`)
+
+When you're in an MCP host (Claude Desktop, Claude Code, Cowork), the toolkit is exposed as tools so
+you author conversationally — no shell needed. Tools operate on **course names** in a managed
+directory (default `~/Documents/OELTKit Courses/`), never file paths.
+
+Tools: `scaffold_course`, `get_course`, `update_structure`, `add_page`, `update_page`,
+`list_components`, `get_component_doc`, `validate`, `preview`, `package_course`,
+`export_course`/`import_course`, `set_theme`.
+
+Recommended authoring loop:
+
+1. `scaffold_course` (name + title + targets)
+2. `list_components` → `get_component_doc` for any component **before** writing it into a page (don't
+   guess attributes — the doc has the canonical markup)
+3. `add_page` / `update_page` to build content
+4. `validate` — read the `message_human` fields; each tells you exactly what to fix
+5. fix, re-`validate` until clean
+6. `preview` to eyeball it, then `package_course` for the LMS (or `export_course` for a `.oeltcourse`)
+
+### Setup per client
+
+- **Claude Desktop:** `npm run build:mcpb -w @oeltkit/mcp` produces `packages/mcp/dist/oelt-mcp.mcpb`;
+  open it in **Settings → Extensions → Install**. The bundle is self-contained (specs, schema,
+  runtime, harness all included) and works with no repo checkout. Optionally set a custom courses
+  folder during install.
+- **Claude Code:** `npm run build -w @oeltkit/mcp`, then
+  `claude mcp add oelt -- node /abs/path/packages/mcp/dist/esm/index.js`.
+- **Any stdio host:** command `node <path>/dist/esm/index.js`; set `OELT_COURSES_DIR` to relocate the
+  courses folder.
+
 ## Complete minimal example
 
 `course.json`:

@@ -9,6 +9,13 @@
   },
   "main": "./dist/esm/index.js",
   "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": "./dist/esm/index.js",
+    "./lib": {
+      "types": "./dist/esm/lib/index.d.ts",
+      "default": "./dist/esm/lib/index.js"
+    }
+  },
   "files": [
     "dist"
   ],
