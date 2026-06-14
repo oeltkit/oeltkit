@@ -2,17 +2,22 @@
 /**
  * @oeltkit/cli — `oelt` command line.
  *   oelt new <dir> [--title "…"]
- *   oelt validate <dir> [--json]
- *   oelt package <dir> --target scorm12|scorm2004|cmi5|web [--out file.zip]
- *   oelt preview <dir> [--port N]
+ *   oelt validate <dir|file.oeltcourse> [--json]
+ *   oelt package <dir|file.oeltcourse> --target scorm12|scorm2004|cmi5|web [--out file.zip]
+ *   oelt preview <dir|file.oeltcourse> [--port N]
+ *   oelt export <dir> [--out file.oeltcourse]
+ *   oelt import <file.oeltcourse> <dir>
  */
 
 import { mkdirSync, writeFileSync, existsSync } from "node:fs";
-import { join, basename, resolve } from "node:path";
+import { join, basename, resolve, dirname } from "node:path";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";
 import { loadCourse, validateCourse, type Finding } from "./lib/course.js";
 import { buildPackage, writePackage, type Target } from "./lib/generators.js";
 import { repoRoot } from "./lib/paths.js";
+import { exportCourse, importCourse, isOeltCourse } from "./lib/course-file.js";
 
 const TARGETS: Target[] = ["scorm12", "scorm2004", "cmi5", "web"];
 
@@ -86,58 +91,112 @@ function printFindings(findings: Finding[], asJson: boolean): void {
   }
 }
 
-function cmdValidate(dir: string, flags: Args["flags"]): number {
-  const findings = validateCourse(loadCourse(dir));
-  printFindings(findings, flags.json === true);
-  return findings.some((f) => f.level === "error") ? 1 : 0;
+async function resolveDir(input: string): Promise<{ dir: string; cleanup?: () => void }> {
+  if (!isOeltCourse(input)) return { dir: input };
+  const tmp = mkdtempSync(join(tmpdir(), "oelt-import-"));
+  await importCourse(input, tmp);
+  return { dir: tmp, cleanup: () => import("node:fs").then((fs) => fs.rmSync(tmp, { recursive: true, force: true })) };
 }
 
-async function cmdPackage(dir: string, flags: Args["flags"]): Promise<number> {
+async function cmdValidate(input: string, flags: Args["flags"]): Promise<number> {
+  const { dir, cleanup } = await resolveDir(input);
+  try {
+    const findings = validateCourse(loadCourse(dir));
+    printFindings(findings, flags.json === true);
+    return findings.some((f) => f.level === "error") ? 1 : 0;
+  } finally {
+    await cleanup?.();
+  }
+}
+
+async function cmdPackage(input: string, flags: Args["flags"]): Promise<number> {
   const target = flags.target;
   if (typeof target !== "string" || !TARGETS.includes(target as Target)) {
     throw new Error(`--target must be one of ${TARGETS.join(", ")}`);
   }
-  const loaded = loadCourse(dir);
-  const findings = validateCourse(loaded);
-  if (findings.some((f) => f.level === "error")) {
-    console.error("Refusing to package — validation failed:");
-    printFindings(findings, false);
-    return 1;
+  const { dir, cleanup } = await resolveDir(input);
+  try {
+    const loaded = loadCourse(dir);
+    const findings = validateCourse(loaded);
+    if (findings.some((f) => f.level === "error")) {
+      console.error("Refusing to package — validation failed:");
+      printFindings(findings, false);
+      return 1;
+    }
+    const bytes = await buildPackage(loaded.dir, loaded.course, target as Target);
+    const out = typeof flags.out === "string" ? flags.out : `${loaded.course.id}-${target}.zip`;
+    writePackage(bytes, out);
+    console.log(`Packaged ${target} → ${out} (${(bytes.length / 1024).toFixed(0)} KB)`);
+    return 0;
+  } finally {
+    await cleanup?.();
   }
-  const bytes = await buildPackage(loaded.dir, loaded.course, target as Target);
-  const out = typeof flags.out === "string" ? flags.out : `${loaded.course.id}-${target}.zip`;
-  writePackage(bytes, out);
-  console.log(`Packaged ${target} → ${out} (${(bytes.length / 1024).toFixed(0)} KB)`);
-  return 0;
 }
 
-function cmdPreview(dir: string, flags: Args["flags"]): void {
+async function cmdPreview(input: string, flags: Args["flags"]): Promise<void> {
+  // For .oeltcourse input: extract to a temp dir that lives for the server lifetime.
+  let dir = input;
+  if (isOeltCourse(input)) {
+    const tmp = mkdtempSync(join(tmpdir(), "oelt-preview-"));
+    await importCourse(input, tmp);
+    dir = tmp;
+    // Register cleanup on exit so the OS does not accumulate temp dirs.
+    process.on("exit", () => {
+      try {
+        import("node:fs").then((fs) => fs.rmSync(tmp, { recursive: true, force: true }));
+      } catch { /* best effort */ }
+    });
+  }
   const server = join(repoRoot(), "harness", "server.mjs");
   const args = [server, dir];
   if (typeof flags.port === "string") args.push("--port", flags.port);
   spawn("node", args, { stdio: "inherit" });
 }
 
+async function cmdExport(dir: string, flags: Args["flags"]): Promise<void> {
+  const out = typeof flags.out === "string" ? flags.out : undefined;
+  const result = await exportCourse(dir, out);
+  console.log(`Exported → ${result}`);
+}
+
+async function cmdImport(file: string, dir: string): Promise<void> {
+  await importCourse(file, dir);
+  console.log(`Imported ${file} → ${dir}`);
+}
+
 async function main(): Promise<number> {
   const { _, flags } = parseArgs(process.argv.slice(2));
-  const [command, dir] = _;
+  const [command, arg1, arg2] = _;
   if (!command || command === "help" || flags.help) {
     console.log(
-      "oelt <command>\n  new <dir> [--title]\n  validate <dir> [--json]\n  package <dir> --target scorm12|scorm2004|cmi5|web [--out]\n  preview <dir> [--port]",
+      "oelt <command>\n" +
+        "  new <dir> [--title]\n" +
+        "  validate <dir|file.oeltcourse> [--json]\n" +
+        "  package <dir|file.oeltcourse> --target scorm12|scorm2004|cmi5|web [--out]\n" +
+        "  preview <dir|file.oeltcourse> [--port]\n" +
+        "  export <dir> [--out file.oeltcourse]\n" +
+        "  import <file.oeltcourse> <dir>",
     );
     return command ? 0 : 1;
   }
-  if (!dir && command !== "help") throw new Error(`${command}: missing <dir>`);
+  if (!arg1 && command !== "help") throw new Error(`${command}: missing argument`);
   switch (command) {
     case "new":
-      cmdNew(dir!, flags);
+      cmdNew(arg1!, flags);
       return 0;
     case "validate":
-      return cmdValidate(dir!, flags);
+      return cmdValidate(arg1!, flags);
     case "package":
-      return cmdPackage(dir!, flags);
+      return cmdPackage(arg1!, flags);
     case "preview":
-      cmdPreview(dir!, flags);
+      await cmdPreview(arg1!, flags);
+      return 0;
+    case "export":
+      await cmdExport(arg1!, flags);
+      return 0;
+    case "import":
+      if (!arg2) throw new Error("import: missing <dir>");
+      await cmdImport(arg1!, arg2);
       return 0;
     default:
       throw new Error(`unknown command: ${command}`);

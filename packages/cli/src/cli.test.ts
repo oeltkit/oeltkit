@@ -1,9 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { mkdtempSync, mkdirSync, writeFileSync, rmSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import JSZip from "jszip";
 import { scorm12Manifest, cmi5Xml } from "./lib/generators.js";
 import { validateCourse, type CourseManifest, type LoadedCourse } from "./lib/course.js";
+import { exportCourse, importCourse, isSafePath } from "./lib/course-file.js";
 
 const base = (over: Partial<CourseManifest> = {}): CourseManifest => ({
   oelt: "0.1",
@@ -120,5 +122,102 @@ describe("validateCourse cross-checks", () => {
       ],
     });
     expect(codes(c)).toContain("no-required-interaction");
+  });
+});
+
+describe(".oeltcourse export / import", () => {
+  let srcDir: string;
+  let workDir: string;
+
+  beforeAll(() => {
+    workDir = mkdtempSync(join(tmpdir(), "oelt-cf-"));
+    srcDir = join(workDir, "src-course");
+    mkdirSync(join(srcDir, "pages"), { recursive: true });
+    writeFileSync(
+      join(srcDir, "course.json"),
+      JSON.stringify({
+        oelt: "0.1",
+        id: "org.oelt.cftest",
+        title: "CF Test",
+        lang: "en",
+        targets: ["web"],
+        structure: [{ id: "m1", title: "M1", pages: [{ id: "p1", title: "P1", src: "pages/p1.html" }] }],
+      }),
+    );
+    writeFileSync(join(srcDir, "pages", "p1.html"), "<section><h1>Hello</h1></section>");
+  });
+
+  afterAll(() => rmSync(workDir, { recursive: true, force: true }));
+
+  it("round-trip: export → import → identical tree", async () => {
+    const outFile = join(workDir, "test.oeltcourse");
+    await exportCourse(srcDir, outFile);
+
+    const importDir = join(workDir, "imported");
+    await importCourse(outFile, importDir);
+
+    expect(readdirSync(join(importDir, "pages"))).toContain("p1.html");
+    const manifest = JSON.parse(readFileSync(join(importDir, "course.json"), "utf8"));
+    expect(manifest.id).toBe("org.oelt.cftest");
+  });
+
+  it("refuses to import when the embedded manifest requires a newer MAJOR version", async () => {
+    const zip = new JSZip();
+    zip.file(
+      "course.json",
+      JSON.stringify({ oelt: "99.0", id: "x.y", title: "T", lang: "en", targets: ["web"], structure: [] }),
+    );
+    const bytes = await zip.generateAsync({ type: "nodebuffer" });
+    const path = join(workDir, "future.oeltcourse");
+    writeFileSync(path, bytes);
+    await expect(importCourse(path, join(workDir, "future-out"))).rejects.toThrow(
+      /requires toolkit v99\.0 or later/,
+    );
+  });
+
+  it("refuses to import when archive has no course.json", async () => {
+    const zip = new JSZip();
+    zip.file("README.txt", "not a course");
+    const bytes = await zip.generateAsync({ type: "nodebuffer" });
+    const path = join(workDir, "bad.oeltcourse");
+    writeFileSync(path, bytes);
+    await expect(importCourse(path, join(workDir, "bad-out"))).rejects.toThrow(
+      /missing course\.json/,
+    );
+  });
+
+  it("refuses to import into a non-empty directory", async () => {
+    const outFile = join(workDir, "test.oeltcourse");
+    const occupied = join(workDir, "occupied");
+    mkdirSync(occupied);
+    writeFileSync(join(occupied, "existing.txt"), "data");
+    await expect(importCourse(outFile, occupied)).rejects.toThrow(/non-empty/);
+  });
+});
+
+describe("isSafePath zip-slip guard", () => {
+  const target = "/safe/target";
+
+  it("allows normal relative paths", () => {
+    expect(isSafePath(target, "pages/p1.html")).toBe(true);
+    expect(isSafePath(target, "course.json")).toBe(true);
+    expect(isSafePath(target, "a/b/c/d.txt")).toBe(true);
+  });
+
+  it("rejects absolute POSIX paths", () => {
+    expect(isSafePath(target, "/etc/passwd")).toBe(false);
+  });
+
+  it("rejects Windows absolute paths", () => {
+    expect(isSafePath(target, "C:\\Windows\\System32")).toBe(false);
+  });
+
+  it("rejects path-traversal that escapes target", () => {
+    expect(isSafePath(target, "../../outside.txt")).toBe(false);
+    expect(isSafePath(target, "../sibling/file.txt")).toBe(false);
+  });
+
+  it("allows paths that stay inside target", () => {
+    expect(isSafePath(target, "deep/../still-inside.txt")).toBe(true);
   });
 });
