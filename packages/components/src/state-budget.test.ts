@@ -15,7 +15,7 @@ describe("suspend-state budget (base.md §4)", () => {
 
   it("includes every Batch-A-and-earlier component", () => {
     // Guards against adding a component without registering its budget.
-    for (const name of ["oelt-mcq", "oelt-branching", "oelt-media", "oelt-text-entry"]) {
+    for (const name of ["oelt-mcq", "oelt-branching", "oelt-media", "oelt-text-entry", "oelt-quiz"]) {
       expect(STATE_BUDGET_BYTES[name], `missing budget entry for ${name}`).toBeDefined();
     }
   });

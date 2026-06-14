@@ -1,0 +1,19 @@
+<section>
+  <h1>Quiz</h1>
+  <p>A weighted, mastery-gated quiz. Both questions report individually; the quiz reports one aggregate score.</p>
+  <oelt-quiz id="quizfinal" mastery="0.7">
+    <oelt-mcq id="qa" mode="single" key="b" weight="1">
+      <p slot="prompt">Which standard is recommended for new content?</p>
+      <oelt-option value="a">SCORM 1.2</oelt-option>
+      <oelt-option value="b">cmi5</oelt-option>
+      <oelt-option value="c">AICC</oelt-option>
+      <p slot="correct">Right.</p>
+      <p slot="incorrect">Not quite.</p>
+    </oelt-mcq>
+    <oelt-text-entry id="qb" answer="cmi5" weight="2">
+      <p slot="prompt">Name that standard (one word).</p>
+      <p slot="correct">Correct.</p>
+      <p slot="incorrect">It's cmi5.</p>
+    </oelt-text-entry>
+  </oelt-quiz>
+</section>

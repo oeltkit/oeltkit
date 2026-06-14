@@ -32,6 +32,12 @@
           "title": "Short answer",
           "src": "pages/text-entry.html",
           "interactions": [{ "id": "te1", "type": "fill-in" }]
+        },
+        {
+          "id": "p-quiz",
+          "title": "Quiz",
+          "src": "pages/quiz.html",
+          "interactions": [{ "id": "quizfinal", "type": "performance", "required": true }]
         }
       ]
     }

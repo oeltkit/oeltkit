@@ -65,6 +65,56 @@ test.describe("oelt-text-entry", () => {
   });
 });
 
+test.describe("oelt-quiz", () => {
+  test("axe clean", async ({ page }) => {
+    await page.goto(`${DEMOS}/quiz.html`);
+    await page.locator("oelt-quiz[data-oelt-upgraded]").waitFor();
+    await axeClean(page);
+  });
+
+  test("status shows progress, then emits one weighted aggregate when all answered", async ({
+    page,
+  }) => {
+    await page.goto(`${DEMOS}/quiz.html`);
+    const quiz = page.locator("#quiz1");
+    await expect(quiz.locator("[part~='status']")).toHaveText(/Answered 0 of 2/);
+
+    // Answer q1 (mcq) correctly.
+    await quiz.locator("#q1").getByRole("radio", { name: /cmi5/ }).check();
+    await quiz.locator("#q1").getByRole("button", { name: "Check answer" }).click();
+    await expect(quiz.locator("[part~='status']")).toHaveText(/Answered 1 of 2/);
+    // The quiz has not aggregated yet (only children have emitted).
+    await expect(events(page).filter({ hasText: '"id":"quiz1"' })).toHaveCount(0);
+
+    // Answer q2 (text-entry) correctly → all answered → quiz emits.
+    await quiz.locator("#q2 [part~='input']").fill("cmi5");
+    await quiz.locator("#q2").getByRole("button", { name: "Check answer" }).click();
+
+    await expect(quiz.locator("[part~='status']")).toHaveText(/Quiz complete\. Score 100%/);
+    const quizEvent = events(page).filter({ hasText: '"id":"quiz1"' });
+    await expect(quizEvent).toHaveCount(1);
+    await expect(quizEvent).toContainText('"type":"performance"');
+    await expect(quizEvent).toContainText('"result":"passed"');
+    await expect(quizEvent).toContainText('"score":1');
+  });
+
+  test("weighted aggregation: wrong high-weight answer fails mastery", async ({ page }) => {
+    await page.goto(`${DEMOS}/quiz.html`);
+    const quiz = page.locator("#quiz1");
+    // q1 (weight 1) correct, q2 (weight 2) wrong → (1·1 + 2·0)/3 ≈ 0.33 < 0.7 mastery.
+    await quiz.locator("#q1").getByRole("radio", { name: /cmi5/ }).check();
+    await quiz.locator("#q1").getByRole("button", { name: "Check answer" }).click();
+    await quiz.locator("#q2 [part~='input']").fill("wrong answer");
+    await quiz.locator("#q2").getByRole("button", { name: "Check answer" }).click();
+
+    const quizEvent = events(page).filter({ hasText: '"id":"quiz1"' });
+    await expect(quizEvent).toHaveCount(1);
+    await expect(quizEvent).toContainText('"result":"failed"');
+    // 1/3 rounds to 0.33 in the score region.
+    await expect(quiz.locator("[part~='status']")).toHaveText(/Score 33%/);
+  });
+});
+
 test.describe("oelt-branching", () => {
   test("axe clean", async ({ page }) => {
     await page.goto(`${DEMOS}/branching.html`);
@@ -142,5 +192,26 @@ test.describe("tracking visible in the fake-LMS harness", () => {
     await expectScormValue(page, "cmi.interactions.0.id", "te1");
     await expectScormValue(page, "cmi.interactions.0.type", "fill-in");
     await expectScormValue(page, "cmi.interactions.0.result", "correct");
+  });
+
+  test("scorm12: a quiz records child interactions and its own aggregate", async ({ page }) => {
+    await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
+    await page.goto(`${COURSE}/?mode=scorm12`);
+    const frame = page.frameLocator("#course-frame");
+    await frame.locator("#c-toc").getByText("5. Quiz").click();
+    await expect(frame.locator("h1")).toHaveText("Quiz");
+
+    // Answer both child questions correctly → quiz emits its weighted aggregate.
+    await frame.locator("#qa").getByRole("radio", { name: /cmi5/ }).check();
+    await frame.locator("#qa").getByRole("button", { name: "Check answer" }).click();
+    await frame.locator("#qb [part~='input']").fill("cmi5");
+    await frame.locator("#qb").getByRole("button", { name: "Check answer" }).click();
+
+    // Children recorded as their own interactions (0, 1); quiz aggregate is (2).
+    await expectScormValue(page, "cmi.interactions.0.id", "qa");
+    await expectScormValue(page, "cmi.interactions.1.id", "qb");
+    await expectScormValue(page, "cmi.interactions.2.id", "quizfinal");
+    await expectScormValue(page, "cmi.interactions.2.type", "performance");
+    await expectScormValue(page, "cmi.interactions.2.result", "correct");
   });
 });

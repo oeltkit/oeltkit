@@ -87,8 +87,11 @@ export function ensureStyles(): void {
 }
 
 const COMPONENT_CSS = `
-oelt-mcq, oelt-branching, oelt-media, oelt-text-entry { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
+oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
 oelt-option { display: none; }
+oelt-quiz [part~="status"] { margin-top: var(--oelt-space-3, 1rem); padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #f5f6f8); border: 1px solid var(--oelt-color-fg, #8889); }
+oelt-quiz [part~="status"][part~="passed"] { color: var(--oelt-color-correct, #1a7f4b); border-color: var(--oelt-color-correct, #1a7f4b); }
+oelt-quiz [part~="status"][part~="failed"] { color: var(--oelt-color-incorrect, #b3261e); border-color: var(--oelt-color-incorrect, #b3261e); }
 oelt-text-entry [part~="prompt"] { display: block; margin-bottom: var(--oelt-space-2, .5rem); }
 oelt-text-entry [part~="input"] { font: inherit; padding: var(--oelt-space-2, .5rem); border: 1px solid var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #fff); color: var(--oelt-color-fg, inherit); margin-right: var(--oelt-space-2, .5rem); }
 oelt-text-entry [part~="submit"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); border: 1px solid var(--oelt-color-primary, #357); background: var(--oelt-color-primary, #357); color: var(--oelt-color-bg, #fff); }

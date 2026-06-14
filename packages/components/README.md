@@ -123,6 +123,27 @@ A single-line free-response question. Enhances the authored prompt into a native
 
 **Screen-reader:** the prompt is the input's `<label>`; on submit, focus moves to the `aria-live="polite"` feedback and correctness is conveyed in text (visually-hidden "Correct"/"Incorrect" prefix), never colour alone. Numeric mode uses `inputmode="decimal"` on a text input (not `type="number"`) for a numeric soft keyboard without spinbutton/locale pitfalls.
 
+## `<oelt-quiz>` — question container
+
+Wraps question components, aggregates their results into one **weighted** score, and reports a single interaction. Children (`<oelt-mcq>`, `<oelt-text-entry>`, …) still report their own item-level interactions; the quiz adds the aggregate the score rule consumes.
+
+```html
+<oelt-quiz id="final" mastery="0.7">
+  <oelt-mcq id="q1" mode="single" key="b" weight="1">
+    <p slot="prompt">Which standard is recommended for new content?</p>
+    <oelt-option value="a">SCORM 1.2</oelt-option>
+    <oelt-option value="b">cmi5</oelt-option>
+  </oelt-mcq>
+  <oelt-text-entry id="q2" answer="cmi5" weight="2">
+    <p slot="prompt">Name that standard (one word).</p>
+  </oelt-text-entry>
+</oelt-quiz>
+```
+
+Each question may carry a `weight` (default 1); the quiz score is `Σ(weightᵢ·scoreᵢ)/Σ(weightᵢ)`. `mastery` (0–1) makes the result `passed`/`failed` (else `completed`). `pool="N"` shows a random N of the questions (a question bank); `shuffle` randomizes order. The quiz emits `oelt-interaction` (`type: "performance"`) once every active question is answered.
+
+**Screen-reader:** a `::part(status)` live region announces progress ("Answered 1 of 2 questions") and the final outcome ("Quiz complete. Score 75%."); pooled-out questions get `hidden`. Spec: [quiz.md](../../specs/components/quiz.md).
+
 ## Develop
 
 ```bash

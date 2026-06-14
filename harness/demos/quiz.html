@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oelt-quiz demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>oelt-quiz</h1>
+
+      <oelt-quiz id="quiz1" mastery="0.7">
+        <p>Answer both questions; your weighted score is reported when you finish.</p>
+
+        <oelt-mcq id="q1" mode="single" key="b" weight="1">
+          <p slot="prompt">Which standard is recommended for new content?</p>
+          <oelt-option value="a">SCORM 1.2</oelt-option>
+          <oelt-option value="b">cmi5</oelt-option>
+          <oelt-option value="c">AICC</oelt-option>
+          <p slot="correct">Right.</p>
+          <p slot="incorrect">Not quite.</p>
+        </oelt-mcq>
+
+        <oelt-text-entry id="q2" answer="cmi5" weight="2">
+          <p slot="prompt">Name that standard (one word).</p>
+          <p slot="correct">Correct.</p>
+          <p slot="incorrect">It's cmi5.</p>
+        </oelt-text-entry>
+      </oelt-quiz>
+
+      <h2>Emitted interactions</h2>
+      <ul id="events"></ul>
+    </main>
+    <script>
+      addEventListener("oelt-interaction", (e) => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(e.detail);
+        document.getElementById("events").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

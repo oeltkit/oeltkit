@@ -7,14 +7,17 @@ import { OeltMcq, OeltOption } from "./mcq.js";
 import { OeltBranching } from "./branching.js";
 import { OeltMedia } from "./media.js";
 import { OeltTextEntry } from "./text-entry.js";
+import { OeltQuiz } from "./quiz.js";
 
 export { OeltElement } from "./base.js";
 export { OeltMcq, OeltOption } from "./mcq.js";
 export { OeltBranching } from "./branching.js";
 export { OeltMedia } from "./media.js";
 export { OeltTextEntry } from "./text-entry.js";
+export { OeltQuiz } from "./quiz.js";
 export { grade } from "./grade.js";
 export { gradeText, gradeNumeric } from "./grade-text.js";
+export { aggregateScore, quizGrade, selectPool, itemScore } from "./quiz-grade.js";
 
 /** Register every component (idempotent). Called automatically on import. */
 export function defineComponents(): void {
@@ -24,6 +27,7 @@ export function defineComponents(): void {
     ["oelt-branching", OeltBranching],
     ["oelt-media", OeltMedia],
     ["oelt-text-entry", OeltTextEntry],
+    ["oelt-quiz", OeltQuiz],
   ];
   if (typeof customElements === "undefined") return;
   for (const [name, ctor] of reg) if (!customElements.get(name)) customElements.define(name, ctor);
