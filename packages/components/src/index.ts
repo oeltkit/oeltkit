@@ -15,6 +15,7 @@ import { OeltCategorize, OeltBucket, OeltToken } from "./categorize.js";
 import { OeltTabs, OeltTab } from "./tabs.js";
 import { OeltAccordion, OeltPanel } from "./accordion.js";
 import { OeltFlipCards, OeltCard } from "./flip-cards.js";
+import { OeltHotspot, OeltArea } from "./hotspot.js";
 
 export { OeltElement } from "./base.js";
 export { OeltMcq, OeltOption } from "./mcq.js";
@@ -29,6 +30,7 @@ export { OeltCategorize, OeltBucket, OeltToken } from "./categorize.js";
 export { OeltTabs, OeltTab } from "./tabs.js";
 export { OeltAccordion, OeltPanel } from "./accordion.js";
 export { OeltFlipCards, OeltCard } from "./flip-cards.js";
+export { OeltHotspot, OeltArea } from "./hotspot.js";
 export { grade } from "./grade.js";
 export { gradeText, gradeNumeric } from "./grade-text.js";
 export { aggregateScore, quizGrade, selectPool, itemScore } from "./quiz-grade.js";
@@ -60,6 +62,8 @@ export function defineComponents(): void {
     ["oelt-accordion", OeltAccordion],
     ["oelt-card", OeltCard],
     ["oelt-flip-cards", OeltFlipCards],
+    ["oelt-area", OeltArea],
+    ["oelt-hotspot", OeltHotspot],
   ];
   if (typeof customElements === "undefined") return;
   for (const [name, ctor] of reg) if (!customElements.get(name)) customElements.define(name, ctor);

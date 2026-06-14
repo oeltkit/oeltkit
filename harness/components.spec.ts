@@ -329,6 +329,52 @@ test.describe("oelt-media", () => {
   });
 });
 
+test.describe("oelt-hotspot", () => {
+  test("axe clean (single + multiple)", async ({ page }) => {
+    await page.goto(`${DEMOS}/hotspot.html`);
+    await page.locator("oelt-hotspot[data-oelt-upgraded]").first().waitFor();
+    await axeClean(page);
+  });
+
+  test("keyboard-only: select the correct region + submit emits a passed choice", async ({
+    page,
+  }) => {
+    await page.goto(`${DEMOS}/hotspot.html`);
+    const hs = page.locator("#hs-single");
+    await hs.getByRole("button", { name: "Nucleus" }).focus();
+    await page.keyboard.press("Space"); // toggle selection (aria-pressed)
+    await expect(hs.getByRole("button", { name: "Nucleus" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await hs.getByRole("button", { name: "Check answer" }).focus();
+    await page.keyboard.press("Enter");
+    const ev = events(page).filter({ hasText: '"id":"hs-single"' });
+    await expect(ev).toContainText('"type":"choice"');
+    await expect(ev).toContainText('"result":"passed"');
+    await expect(ev).toContainText('"response":"nucleus"');
+  });
+
+  test("single mode: selecting a second region deselects the first", async ({ page }) => {
+    await page.goto(`${DEMOS}/hotspot.html`);
+    const hs = page.locator("#hs-single");
+    await hs.getByRole("button", { name: "Nucleus" }).click();
+    await hs.getByRole("button", { name: "Mitochondria" }).click();
+    await expect(hs.getByRole("button", { name: "Nucleus" })).toHaveAttribute("aria-pressed", "false");
+    await expect(hs.getByRole("button", { name: "Mitochondria" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  test("multiple mode: partial selection fails, exact set passes", async ({ page }) => {
+    await page.goto(`${DEMOS}/hotspot.html`);
+    const hs = page.locator("#hs-multi");
+    await hs.getByRole("button", { name: "Nucleus" }).click(); // 1 of 2 correct
+    await hs.getByRole("button", { name: "Check answer" }).click();
+    await expect(events(page).filter({ hasText: '"id":"hs-multi"' })).toContainText(
+      '"result":"failed"',
+    );
+  });
+});
+
 test.describe("presentation: tabs / accordion / flip-cards", () => {
   test("axe clean (all three on one page)", async ({ page }) => {
     await page.goto(`${DEMOS}/presentation.html`);
@@ -515,5 +561,21 @@ test.describe("tracking visible in the fake-LMS harness", () => {
     await expectScormValue(page, "cmi.interactions.0.type", "matching");
     await expectScormValue(page, "cmi.interactions.0.result", "correct");
     await expectScormValue(page, "cmi.interactions.0.student_response", "dog=mammals,eagle=birds");
+  });
+
+  test("scorm12: selecting the correct oelt-hotspot records a choice cmi.interaction", async ({
+    page,
+  }) => {
+    await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
+    await page.goto(`${COURSE}/?mode=scorm12`);
+    const frame = page.frameLocator("#course-frame");
+    await frame.locator("#c-toc").getByText("10. Hotspot").click();
+    await expect(frame.locator("h1")).toHaveText("Hotspot");
+    await frame.locator("#hotspot1").getByRole("button", { name: "Nucleus" }).click();
+    await frame.locator("#hotspot1").getByRole("button", { name: "Check answer" }).click();
+    await expectScormValue(page, "cmi.interactions.0.id", "hotspot1");
+    await expectScormValue(page, "cmi.interactions.0.type", "choice");
+    await expectScormValue(page, "cmi.interactions.0.result", "correct");
+    await expectScormValue(page, "cmi.interactions.0.student_response", "nucleus");
   });
 });

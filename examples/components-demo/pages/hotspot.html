@@ -1,0 +1,15 @@
+<section>
+  <h1>Hotspot</h1>
+  <p>Select the correct region on the image, then check. Hotspots are labeled, keyboard-operable buttons. The runtime records it as a choice interaction.</p>
+  <oelt-hotspot
+    id="hotspot1"
+    mode="single"
+    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240'%3E%3Crect width='400' height='240' fill='%23dde'/%3E%3C/svg%3E"
+    alt="Schematic with three labeled regions"
+  >
+    <p slot="prompt">Which region stores genetic material?</p>
+    <oelt-area value="nucleus" x="8" y="20" w="30" h="35" label="Nucleus" correct></oelt-area>
+    <oelt-area value="mito" x="55" y="50" w="28" h="25" label="Mitochondria"></oelt-area>
+    <oelt-area value="wall" x="5" y="70" w="40" h="20" label="Cell wall"></oelt-area>
+  </oelt-hotspot>
+</section>

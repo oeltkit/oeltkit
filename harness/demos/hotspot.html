@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oelt-hotspot demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>oelt-hotspot</h1>
+
+      <!-- single-select -->
+      <oelt-hotspot
+        id="hs-single"
+        mode="single"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240'%3E%3Crect width='400' height='240' fill='%23dde'/%3E%3C/svg%3E"
+        alt="Schematic with three labeled regions"
+      >
+        <p slot="prompt">Which region stores genetic material?</p>
+        <oelt-area value="nucleus" x="8" y="20" w="30" h="35" label="Nucleus" correct></oelt-area>
+        <oelt-area value="mito" x="55" y="50" w="28" h="25" label="Mitochondria"></oelt-area>
+        <oelt-area value="wall" x="5" y="70" w="40" h="20" label="Cell wall"></oelt-area>
+      </oelt-hotspot>
+
+      <!-- multiple-select -->
+      <oelt-hotspot
+        id="hs-multi"
+        mode="multiple"
+        src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='240'%3E%3Crect width='400' height='240' fill='%23edd'/%3E%3C/svg%3E"
+        alt="Schematic with three labeled regions"
+      >
+        <p slot="prompt">Select every structure that stores genetic material.</p>
+        <oelt-area value="nucleus" x="8" y="20" w="30" h="35" label="Nucleus" correct></oelt-area>
+        <oelt-area value="dna" x="45" y="12" w="16" h="16" label="DNA" correct></oelt-area>
+        <oelt-area value="mito" x="55" y="55" w="28" h="25" label="Mitochondria"></oelt-area>
+      </oelt-hotspot>
+
+      <h2>Emitted interactions</h2>
+      <ul id="events"></ul>
+    </main>
+    <script>
+      addEventListener("oelt-interaction", (e) => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(e.detail);
+        document.getElementById("events").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

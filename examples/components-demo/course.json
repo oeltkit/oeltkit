@@ -62,6 +62,12 @@
           "title": "Categorize",
           "src": "pages/categorize.html",
           "interactions": [{ "id": "cat1", "type": "matching" }]
+        },
+        {
+          "id": "p-hotspot",
+          "title": "Hotspot",
+          "src": "pages/hotspot.html",
+          "interactions": [{ "id": "hotspot1", "type": "choice" }]
         }
       ]
     }

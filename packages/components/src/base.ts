@@ -87,8 +87,19 @@ export function ensureStyles(): void {
 }
 
 const COMPONENT_CSS = `
-oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching, oelt-categorize, oelt-tabs, oelt-accordion, oelt-flip-cards { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
-oelt-option, oelt-item, oelt-pair, oelt-bucket, oelt-token, oelt-tab, oelt-panel, oelt-card { display: none; }
+oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching, oelt-categorize, oelt-tabs, oelt-accordion, oelt-flip-cards, oelt-hotspot { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
+oelt-option, oelt-item, oelt-pair, oelt-bucket, oelt-token, oelt-tab, oelt-panel, oelt-card, oelt-area { display: none; }
+oelt-hotspot [part~="stage"] { position: relative; display: inline-block; max-width: 100%; }
+oelt-hotspot [part~="image"] { display: block; max-width: 100%; height: auto; }
+oelt-hotspot [part~="hotspot"] { position: absolute; box-sizing: border-box; font: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--oelt-space-1, .25rem); border: 2px solid var(--oelt-color-primary, #357); border-radius: var(--oelt-radius, 6px); background: color-mix(in srgb, var(--oelt-color-bg, #fff) 70%, transparent); color: var(--oelt-color-fg, inherit); }
+oelt-hotspot [part~="marker"] { visibility: hidden; font-weight: 700; }
+oelt-hotspot [part~="hotspot"][part~="selected"] [part~="marker"] { visibility: visible; }
+oelt-hotspot [part~="hotspot"][part~="selected"] { border-width: 3px; background: color-mix(in srgb, var(--oelt-color-primary, #357) 25%, var(--oelt-color-bg, #fff)); }
+oelt-hotspot [part~="hotspot"][part~="correct"] { border-color: var(--oelt-color-correct, #1a7f4b); }
+oelt-hotspot [part~="hotspot"][part~="incorrect"] { border-color: var(--oelt-color-incorrect, #b3261e); }
+oelt-hotspot [part~="submit"] { font: inherit; cursor: pointer; margin-top: var(--oelt-space-3, 1rem); padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); border: 1px solid var(--oelt-color-primary, #357); background: var(--oelt-color-primary, #357); color: var(--oelt-color-bg, #fff); }
+oelt-hotspot [part~="submit"]:disabled { opacity: .5; cursor: default; }
+oelt-hotspot [part~="feedback"] { margin-top: var(--oelt-space-2, .5rem); outline: none; }
 oelt-tabs [part~="tablist"] { display: flex; flex-wrap: wrap; gap: var(--oelt-space-1, .25rem); border-bottom: 1px solid var(--oelt-color-fg, #8889); }
 oelt-tabs [part~="tab"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border: 1px solid transparent; border-bottom: none; border-radius: var(--oelt-radius, 6px) var(--oelt-radius, 6px) 0 0; background: transparent; color: var(--oelt-color-fg, inherit); }
 oelt-tabs [part~="tab"][part~="selected"] { border-color: var(--oelt-color-fg, #8889); background: var(--oelt-color-bg, #fff); font-weight: 600; }

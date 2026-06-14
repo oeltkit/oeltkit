@@ -240,6 +240,21 @@ Accessible content-organizing widgets. **Presentation only** — they don't trac
 - **Accordion** upgrades each panel to a native `<details>`/`<summary>` (accessible by construction); `single` uses the native shared-`name` mechanism for exclusive open.
 - **Flip-cards** are `<button>`s with `aria-pressed`; the hidden face is `hidden` so SR reads only the visible side; the flip animation is suppressed under `prefers-reduced-motion`.
 
+## `<oelt-hotspot>` — image hotspot selection
+
+Select the correct region(s) on an image. **Accessible by design:** hotspots are labelled, keyboard-operable `<button>`s positioned over the image (percentage coords) — never pixel-hunting, so screen-reader users answer from the labels alone.
+
+```html
+<oelt-hotspot id="cell" mode="multiple" src="images/cell.svg" alt="Diagram of an animal cell">
+  <p slot="prompt">Select every structure that stores genetic material.</p>
+  <oelt-area value="nucleus" x="10" y="18" w="26" h="30" label="Nucleus" correct></oelt-area>
+  <oelt-area value="mito" x="55" y="50" w="22" h="20" label="Mitochondria"></oelt-area>
+  <oelt-area value="dna" x="16" y="24" w="10" h="10" label="DNA" correct></oelt-area>
+</oelt-hotspot>
+```
+
+`<oelt-area>` places a labelled hotspot by percentage of the image box (`x`/`y`/`w`/`h`, 0–100), marking answers with `correct`. The image needs `alt`. Hotspots are toggle buttons in a `role="group"` labelled by the prompt; graded exactly like `<oelt-mcq>` (`type: "choice"`, single or multiple with partial credit). Spec: [hotspot.md](../../specs/components/hotspot.md).
+
 ## Develop
 
 ```bash
