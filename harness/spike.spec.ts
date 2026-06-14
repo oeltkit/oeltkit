@@ -5,6 +5,14 @@
 import { test, expect, type Page } from "@playwright/test";
 import { expectScormValue, expectStatement, getSummary, getModel } from "./assert";
 
+// All spike tests share one harness server (4174) and one state file per mode,
+// and each test resets its mode's state on launch. Tests for the same mode live
+// in different describe blocks (fresh / pass / resume), so the collision is
+// cross-block — only file-level serial execution prevents parallel workers from
+// stomping each other's shared state. Other spec files use different servers and
+// still run in parallel.
+test.describe.configure({ mode: "serial" });
+
 const BASE = "http://localhost:4174";
 
 const frame = (page: Page) => page.frameLocator("#course-frame");
