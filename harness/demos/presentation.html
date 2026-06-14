@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>presentation components demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>Presentation components</h1>
+
+      <h2>oelt-tabs</h2>
+      <oelt-tabs id="tabs">
+        <oelt-tab label="Overview"><p>Overview content.</p></oelt-tab>
+        <oelt-tab label="Details"><p>Details content.</p></oelt-tab>
+        <oelt-tab label="Examples"><p>Examples content.</p></oelt-tab>
+      </oelt-tabs>
+
+      <h2>oelt-accordion</h2>
+      <oelt-accordion id="acc" single>
+        <oelt-panel label="What is SCORM?"><p>A packaging + runtime standard.</p></oelt-panel>
+        <oelt-panel label="What is cmi5?"><p>An xAPI profile for launch + tracking.</p></oelt-panel>
+      </oelt-accordion>
+
+      <h2>oelt-flip-cards</h2>
+      <oelt-flip-cards id="cards">
+        <oelt-card front="Mercury"><p>Closest planet to the Sun.</p></oelt-card>
+        <oelt-card front="Venus"><p>Hottest planet.</p></oelt-card>
+      </oelt-flip-cards>
+    </main>
+  </body>
+</html>

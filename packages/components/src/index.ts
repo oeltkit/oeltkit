@@ -12,6 +12,9 @@ import { OeltLikert } from "./likert.js";
 import { OeltOrdering, OeltItem } from "./ordering.js";
 import { OeltMatching, OeltPair } from "./matching.js";
 import { OeltCategorize, OeltBucket, OeltToken } from "./categorize.js";
+import { OeltTabs, OeltTab } from "./tabs.js";
+import { OeltAccordion, OeltPanel } from "./accordion.js";
+import { OeltFlipCards, OeltCard } from "./flip-cards.js";
 
 export { OeltElement } from "./base.js";
 export { OeltMcq, OeltOption } from "./mcq.js";
@@ -23,6 +26,9 @@ export { OeltLikert } from "./likert.js";
 export { OeltOrdering, OeltItem } from "./ordering.js";
 export { OeltMatching, OeltPair } from "./matching.js";
 export { OeltCategorize, OeltBucket, OeltToken } from "./categorize.js";
+export { OeltTabs, OeltTab } from "./tabs.js";
+export { OeltAccordion, OeltPanel } from "./accordion.js";
+export { OeltFlipCards, OeltCard } from "./flip-cards.js";
 export { grade } from "./grade.js";
 export { gradeText, gradeNumeric } from "./grade-text.js";
 export { aggregateScore, quizGrade, selectPool, itemScore } from "./quiz-grade.js";
@@ -48,6 +54,12 @@ export function defineComponents(): void {
     ["oelt-bucket", OeltBucket],
     ["oelt-token", OeltToken],
     ["oelt-categorize", OeltCategorize],
+    ["oelt-tab", OeltTab],
+    ["oelt-tabs", OeltTabs],
+    ["oelt-panel", OeltPanel],
+    ["oelt-accordion", OeltAccordion],
+    ["oelt-card", OeltCard],
+    ["oelt-flip-cards", OeltFlipCards],
   ];
   if (typeof customElements === "undefined") return;
   for (const [name, ctor] of reg) if (!customElements.get(name)) customElements.define(name, ctor);

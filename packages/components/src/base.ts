@@ -87,8 +87,20 @@ export function ensureStyles(): void {
 }
 
 const COMPONENT_CSS = `
-oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching, oelt-categorize { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
-oelt-option, oelt-item, oelt-pair, oelt-bucket, oelt-token { display: none; }
+oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching, oelt-categorize, oelt-tabs, oelt-accordion, oelt-flip-cards { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
+oelt-option, oelt-item, oelt-pair, oelt-bucket, oelt-token, oelt-tab, oelt-panel, oelt-card { display: none; }
+oelt-tabs [part~="tablist"] { display: flex; flex-wrap: wrap; gap: var(--oelt-space-1, .25rem); border-bottom: 1px solid var(--oelt-color-fg, #8889); }
+oelt-tabs [part~="tab"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border: 1px solid transparent; border-bottom: none; border-radius: var(--oelt-radius, 6px) var(--oelt-radius, 6px) 0 0; background: transparent; color: var(--oelt-color-fg, inherit); }
+oelt-tabs [part~="tab"][part~="selected"] { border-color: var(--oelt-color-fg, #8889); background: var(--oelt-color-bg, #fff); font-weight: 600; }
+oelt-tabs [part~="panel"] { padding: var(--oelt-space-3, 1rem); }
+oelt-accordion [part~="panel"] { border: 1px solid var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); margin-bottom: var(--oelt-space-2, .5rem); }
+oelt-accordion [part~="summary"] { cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); font-weight: 600; }
+oelt-accordion [part~="content"] { padding: 0 var(--oelt-space-3, 1rem) var(--oelt-space-3, 1rem); }
+oelt-flip-cards [part~="grid"] { display: flex; flex-wrap: wrap; gap: var(--oelt-space-3, 1rem); }
+oelt-flip-cards [part~="card"] { font: inherit; cursor: pointer; flex: 1 1 10rem; min-height: 6rem; padding: var(--oelt-space-3, 1rem); border: 1px solid var(--oelt-color-primary, #357); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #fff); color: var(--oelt-color-fg, inherit); transition: transform var(--oelt-motion-duration, .2s); }
+oelt-flip-cards [part~="card"][part~="flipped"] { background: var(--oelt-color-bg, #eef0f4); }
+oelt-flip-cards [part~="front"] { font-weight: 600; }
+@media (prefers-reduced-motion: reduce) { oelt-flip-cards [part~="card"] { transition: none; } }
 oelt-categorize [part~="buckets"] { display: flex; flex-wrap: wrap; gap: var(--oelt-space-3, 1rem); margin: var(--oelt-space-3, 1rem) 0; }
 oelt-categorize [part~="bucket"] { flex: 1 1 8rem; min-height: 4rem; padding: var(--oelt-space-2, .5rem); border: 1px dashed var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); }
 oelt-categorize [part~="bucket-label"] { display: block; font-weight: 600; margin-bottom: var(--oelt-space-2, .5rem); }

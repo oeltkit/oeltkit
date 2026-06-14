@@ -215,6 +215,31 @@ Tokens start shuffled in a bank. **Keyboard:** focus a token, `Space` to pick up
 
 > The drag-and-drop family (`<oelt-ordering>`, `<oelt-matching>`, `<oelt-categorize>`) shares one keyboard pick-up/move/drop model, documented once in [dnd-family.md](../../specs/components/dnd-family.md) and implemented by a shared `GrabController`. Native `<button>` items, no deprecated `aria-grabbed`, SR announcement on every state change, `prefers-reduced-motion` honored.
 
+## Presentation — `<oelt-tabs>`, `<oelt-accordion>`, `<oelt-flip-cards>`
+
+Accessible content-organizing widgets. **Presentation only** — they don't track or score (engagement is the course's `pages-viewed` progress) and are stateless. Spec: [presentation.md](../../specs/components/presentation.md).
+
+```html
+<oelt-tabs id="topics">
+  <oelt-tab label="Overview"><p>…</p></oelt-tab>
+  <oelt-tab label="Details"><p>…</p></oelt-tab>
+</oelt-tabs>
+
+<oelt-accordion single>  <!-- `single` = one section open at a time -->
+  <oelt-panel label="What is SCORM?"><p>…</p></oelt-panel>
+  <oelt-panel label="What is cmi5?"><p>…</p></oelt-panel>
+</oelt-accordion>
+
+<oelt-flip-cards>
+  <oelt-card front="Mercury"><p>Closest planet to the Sun.</p></oelt-card>
+  <oelt-card front="Venus"><p>Hottest planet.</p></oelt-card>
+</oelt-flip-cards>
+```
+
+- **Tabs** follow the WAI-ARIA Tabs pattern: `←`/`→` (wrapping), `Home`/`End`, roving tabindex, automatic activation.
+- **Accordion** upgrades each panel to a native `<details>`/`<summary>` (accessible by construction); `single` uses the native shared-`name` mechanism for exclusive open.
+- **Flip-cards** are `<button>`s with `aria-pressed`; the hidden face is `hidden` so SR reads only the visible side; the flip animation is suppressed under `prefers-reduced-motion`.
+
 ## Develop
 
 ```bash

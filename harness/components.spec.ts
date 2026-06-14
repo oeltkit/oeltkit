@@ -329,6 +329,60 @@ test.describe("oelt-media", () => {
   });
 });
 
+test.describe("presentation: tabs / accordion / flip-cards", () => {
+  test("axe clean (all three on one page)", async ({ page }) => {
+    await page.goto(`${DEMOS}/presentation.html`);
+    await page.locator("oelt-tabs[data-oelt-upgraded]").waitFor();
+    await page.locator("oelt-flip-cards[data-oelt-upgraded]").waitFor();
+    await axeClean(page);
+  });
+
+  test("tabs: arrow keys select tabs and reveal the matching panel", async ({ page }) => {
+    await page.goto(`${DEMOS}/presentation.html`);
+    const tabs = page.locator("#tabs");
+    const overview = tabs.getByRole("tab", { name: "Overview" });
+    const details = tabs.getByRole("tab", { name: "Details" });
+    await overview.focus();
+    await expect(overview).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("ArrowRight");
+    await expect(details).toHaveAttribute("aria-selected", "true");
+    await expect(details).toBeFocused();
+    await expect(tabs.getByRole("tabpanel")).toHaveText("Details content.");
+    // Roving tabindex: the unselected tab is removed from the tab order.
+    await expect(overview).toHaveAttribute("tabindex", "-1");
+    // End → last tab; ArrowRight wraps from last back to first.
+    await page.keyboard.press("End");
+    await expect(tabs.getByRole("tab", { name: "Examples" })).toHaveAttribute("aria-selected", "true");
+    await page.keyboard.press("ArrowRight");
+    await expect(overview).toHaveAttribute("aria-selected", "true");
+  });
+
+  test("accordion: native disclosure, single keeps only one open", async ({ page }) => {
+    await page.goto(`${DEMOS}/presentation.html`);
+    const panels = page.locator("#acc details");
+    await page.locator("#acc summary", { hasText: "What is SCORM?" }).click();
+    await expect(panels.nth(0)).toHaveAttribute("open", "");
+    await page.locator("#acc summary", { hasText: "What is cmi5?" }).click();
+    // `single` (shared name) → opening the second natively closes the first.
+    await expect(panels.nth(1)).toHaveAttribute("open", "");
+    await expect(panels.nth(0)).not.toHaveAttribute("open", "");
+  });
+
+  test("flip-cards: activating a card flips it (aria-pressed + back revealed)", async ({ page }) => {
+    await page.goto(`${DEMOS}/presentation.html`);
+    const card = page.locator("#cards [part~='card']").first();
+    await expect(card).toHaveAttribute("aria-pressed", "false");
+    await card.focus();
+    await page.keyboard.press("Enter");
+    await expect(card).toHaveAttribute("aria-pressed", "true");
+    await expect(card.locator("[part~='back']")).toBeVisible();
+    await expect(card.locator("[part~='front']")).toBeHidden();
+    await page.keyboard.press("Enter");
+    await expect(card).toHaveAttribute("aria-pressed", "false");
+    await expect(card.locator("[part~='front']")).toBeVisible();
+  });
+});
+
 test.describe("tracking visible in the fake-LMS harness", () => {
   // These tests share one harness server and one mode=scorm12 state file; each
   // resets it at the start. Run serially so parallel workers don't stomp each
