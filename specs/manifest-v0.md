@@ -210,3 +210,38 @@ The `oelt` field is `MAJOR.MINOR`.
 - **MAJOR** bump: anything that could invalidate an existing course. Requires migration tooling and human sign-off.
 
 A consumer MUST refuse a manifest whose MAJOR version it does not implement, rather than guessing. v0 of the toolkit reads `0.x`.
+
+## 9. Web-target packaging constraints (file:// viability)
+
+A `web`-target package MUST run when `index.html` is opened directly from the file system (i.e.,
+via a `file://` URL in a browser). This is the standalone delivery mode — no server, no LMS.
+
+The following constraints apply to all files in a `web`-target package:
+
+### 9.1 No runtime fetch of local resources
+
+The player MUST NOT call `fetch()` to load page content at runtime. All page HTML MUST be
+embedded in the package at build time and delivered via a synchronous script global
+(`window.OELT_PAGES`). The packager generates an `oelt-pages.js` file containing all page
+content as a JavaScript object; `index.html` loads it with a plain `<script src="oelt-pages.js">`.
+
+Rationale: Chromium-based browsers block `fetch()` of `file://` resources from another
+`file://` page due to cross-origin restrictions.
+
+### 9.2 Use the IIFE bundle
+
+The player MUST load the runtime and components via the pre-built IIFE bundles
+(`oelt-runtime.js`, `oelt-components.js`) via `<script src="...">` tags. ES module imports
+(`<script type="module">` with dynamic `import()`) are not required, and module loading from
+`file://` is unreliable across browser versions.
+
+### 9.3 No absolute paths
+
+All resource paths in `index.html` and the player MUST be relative paths. Absolute URLs
+(starting with `/` or `https://`) are not resolvable from a `file://` context.
+
+### 9.4 Conformance test
+
+The automated suite MUST include a Playwright test that loads the `web`-target package for each
+example course via a `file://` URL and asserts: (a) the first page renders (the page container is
+visible), and (b) for courses with scoring, the web adapter records completion to `localStorage`.
