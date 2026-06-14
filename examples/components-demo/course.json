@@ -56,6 +56,12 @@
           "title": "Matching",
           "src": "pages/matching.html",
           "interactions": [{ "id": "match1", "type": "matching" }]
+        },
+        {
+          "id": "p-categorize",
+          "title": "Categorize",
+          "src": "pages/categorize.html",
+          "interactions": [{ "id": "cat1", "type": "matching" }]
         }
       ]
     }

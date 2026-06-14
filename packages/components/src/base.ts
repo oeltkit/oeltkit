@@ -87,8 +87,21 @@ export function ensureStyles(): void {
 }
 
 const COMPONENT_CSS = `
-oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
-oelt-option, oelt-item, oelt-pair { display: none; }
+oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching, oelt-categorize { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
+oelt-option, oelt-item, oelt-pair, oelt-bucket, oelt-token { display: none; }
+oelt-categorize [part~="buckets"] { display: flex; flex-wrap: wrap; gap: var(--oelt-space-3, 1rem); margin: var(--oelt-space-3, 1rem) 0; }
+oelt-categorize [part~="bucket"] { flex: 1 1 8rem; min-height: 4rem; padding: var(--oelt-space-2, .5rem); border: 1px dashed var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); }
+oelt-categorize [part~="bucket-label"] { display: block; font-weight: 600; margin-bottom: var(--oelt-space-2, .5rem); }
+oelt-categorize [part~="bucket-items"] { display: flex; flex-wrap: wrap; gap: var(--oelt-space-2, .5rem); }
+oelt-categorize [part~="bucket"][part~="cursor"], oelt-categorize [part~="bank"][part~="cursor"] { outline: 2px solid var(--oelt-color-primary, #357); outline-offset: 2px; }
+oelt-categorize [part~="bank"] { display: flex; flex-wrap: wrap; gap: var(--oelt-space-2, .5rem); margin: var(--oelt-space-3, 1rem) 0; padding: var(--oelt-space-2, .5rem); border: 1px dashed var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); min-height: 2.2rem; }
+oelt-categorize [part~="token"] { font: inherit; cursor: grab; padding: var(--oelt-space-1, .25rem) var(--oelt-space-3, 1rem); border: 1px solid var(--oelt-color-primary, #357); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #fff); color: var(--oelt-color-fg, inherit); }
+oelt-categorize [part~="token"][part~="grabbed"] { cursor: grabbing; outline: 2px solid var(--oelt-color-primary, #357); outline-offset: 2px; }
+oelt-categorize [part~="token"][part~="correct"] { border-color: var(--oelt-color-correct, #1a7f4b); color: var(--oelt-color-correct, #1a7f4b); }
+oelt-categorize [part~="token"][part~="incorrect"] { border-color: var(--oelt-color-incorrect, #b3261e); color: var(--oelt-color-incorrect, #b3261e); }
+oelt-categorize [part~="submit"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); border: 1px solid var(--oelt-color-primary, #357); background: var(--oelt-color-primary, #357); color: var(--oelt-color-bg, #fff); }
+oelt-categorize [part~="submit"]:disabled { opacity: .5; cursor: default; }
+oelt-categorize [part~="feedback"] { margin-top: var(--oelt-space-2, .5rem); outline: none; }
 oelt-matching [part~="prompts"] { list-style: none; margin: var(--oelt-space-3, 1rem) 0; padding: 0; display: flex; flex-direction: column; gap: var(--oelt-space-2, .5rem); }
 oelt-matching [part~="prompt-row"] { display: flex; align-items: center; gap: var(--oelt-space-3, 1rem); }
 oelt-matching [part~="prompt-label"] { min-width: 8rem; }

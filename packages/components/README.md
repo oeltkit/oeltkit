@@ -196,7 +196,24 @@ Assign each value to its correct prompt. Same keyboard-first model as ordering.
 
 Values start shuffled in a bank. **Keyboard:** focus a value, `Space` to pick up, `←`/`→` to move it across the prompt targets (and the bank), `Space` to drop, `Esc` to cancel — every step announced. One value per target (dropping displaces the previous one to the bank). On **Check** emits `oelt-interaction` (`type: "matching"`, `score` = fraction of targets holding the correct value, `passed` iff all, `response` = `prompt=value` pairs). Spec: [matching.md](../../specs/components/matching.md).
 
-> The drag-and-drop family (`<oelt-ordering>`, `<oelt-matching>`, and the upcoming `<oelt-categorize>`) share one keyboard pick-up/move/drop model, documented once in [dnd-family.md](../../specs/components/dnd-family.md) and implemented by a shared `GrabController`. Native `<button>` items, no deprecated `aria-grabbed`, SR announcement on every state change, `prefers-reduced-motion` honored.
+## `<oelt-categorize>` — sort items into categories
+
+Sort tokens into category buckets. A bucket holds many tokens (unlike matching's 1:1).
+
+```html
+<oelt-categorize id="animals">
+  <p slot="prompt">Sort each animal into its group.</p>
+  <oelt-bucket value="mammals">Mammals</oelt-bucket>
+  <oelt-bucket value="birds">Birds</oelt-bucket>
+  <oelt-token bucket="mammals" value="dog">Dog</oelt-token>
+  <oelt-token bucket="birds" value="eagle">Eagle</oelt-token>
+  <oelt-token bucket="mammals" value="cat">Cat</oelt-token>
+</oelt-categorize>
+```
+
+Tokens start shuffled in a bank. **Keyboard:** focus a token, `Space` to pick up, `←`/`→` across buckets (and the bank), `Space` to drop, `Esc` to cancel — every step announced. On **Check** emits `oelt-interaction` (`type: "matching"`, `score` = fraction of tokens in their correct bucket, `passed` iff all, `response` = `token=bucket` pairs). Spec: [categorize.md](../../specs/components/categorize.md).
+
+> The drag-and-drop family (`<oelt-ordering>`, `<oelt-matching>`, `<oelt-categorize>`) shares one keyboard pick-up/move/drop model, documented once in [dnd-family.md](../../specs/components/dnd-family.md) and implemented by a shared `GrabController`. Native `<button>` items, no deprecated `aria-grabbed`, SR announcement on every state change, `prefers-reduced-motion` honored.
 
 ## Develop
 

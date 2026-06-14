@@ -183,6 +183,50 @@ test.describe("oelt-matching", () => {
   });
 });
 
+test.describe("oelt-categorize", () => {
+  test("axe clean", async ({ page }) => {
+    await page.goto(`${DEMOS}/categorize.html`);
+    await page.locator("oelt-categorize[data-oelt-upgraded]").first().waitFor();
+    await axeClean(page);
+  });
+
+  test("keyboard pick-up announces bucket positions", async ({ page }) => {
+    await page.goto(`${DEMOS}/categorize.html`);
+    const live = page.locator('#cat [role="status"][aria-live="assertive"]');
+    await page.locator("#cat").getByRole("button", { name: "Dog", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await expect(live).toContainText(/Grabbed Dog\. Bank\./);
+    await page.keyboard.press("ArrowLeft"); // bank → last bucket (Birds)
+    await expect(live).toContainText("Bucket: Birds.");
+    await page.keyboard.press("ArrowLeft"); // → Mammals
+    await expect(live).toContainText("Bucket: Mammals.");
+    await page.keyboard.press("Escape");
+    await expect(live).toContainText(/Cancelled/);
+  });
+
+  test("keyboard-only: sort the 2 tokens and Check → passed", async ({ page }) => {
+    await page.goto(`${DEMOS}/categorize.html`);
+    const c = page.locator("#cat2"); // buckets: Mammals(b0), Birds(b1); bank cursor = 2
+    // Dog → Mammals: pick up (cursor=2), ArrowLeft x2 → b0, drop.
+    await c.getByRole("button", { name: "Dog", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("Space");
+    // Eagle → Birds: pick up (cursor=2), ArrowLeft x1 → b1, drop.
+    await c.getByRole("button", { name: "Eagle", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("Space");
+    await c.getByRole("button", { name: "Check" }).click();
+    const ev = events(page).filter({ hasText: '"id":"cat2"' });
+    await expect(ev).toHaveCount(1);
+    await expect(ev).toContainText('"type":"matching"');
+    await expect(ev).toContainText('"result":"passed"');
+    await expect(ev).toContainText("dog=mammals,eagle=birds");
+  });
+});
+
 test.describe("oelt-quiz", () => {
   test("axe clean", async ({ page }) => {
     await page.goto(`${DEMOS}/quiz.html`);
@@ -286,6 +330,11 @@ test.describe("oelt-media", () => {
 });
 
 test.describe("tracking visible in the fake-LMS harness", () => {
+  // These tests share one harness server and one mode=scorm12 state file; each
+  // resets it at the start. Run serially so parallel workers don't stomp each
+  // other's shared state (the source of "Harness error" flakes under load).
+  test.describe.configure({ mode: "serial" });
+
   test("scorm12: answering oelt-mcq records a cmi.interaction", async ({ page }) => {
     await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
     await page.goto(`${COURSE}/?mode=scorm12`);
@@ -389,5 +438,28 @@ test.describe("tracking visible in the fake-LMS harness", () => {
     await expectScormValue(page, "cmi.interactions.0.type", "matching");
     await expectScormValue(page, "cmi.interactions.0.result", "correct");
     await expectScormValue(page, "cmi.interactions.0.student_response", "France=paris,Japan=tokyo");
+  });
+
+  test("scorm12: solving oelt-categorize records a matching cmi.interaction", async ({ page }) => {
+    await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
+    await page.goto(`${COURSE}/?mode=scorm12`);
+    const frame = page.frameLocator("#course-frame");
+    await frame.locator("#c-toc").getByText("9. Categorize").click();
+    await expect(frame.locator("h1")).toHaveText("Categorize");
+    // buckets Mammals(b0), Birds(b1); bank cursor = 2.
+    await frame.locator("#cat1").getByRole("button", { name: "Dog", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("Space");
+    await frame.locator("#cat1").getByRole("button", { name: "Eagle", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("Space");
+    await frame.getByRole("button", { name: "Check" }).click();
+    await expectScormValue(page, "cmi.interactions.0.id", "cat1");
+    await expectScormValue(page, "cmi.interactions.0.type", "matching");
+    await expectScormValue(page, "cmi.interactions.0.result", "correct");
+    await expectScormValue(page, "cmi.interactions.0.student_response", "dog=mammals,eagle=birds");
   });
 });
