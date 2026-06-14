@@ -69,7 +69,12 @@ cpSync(COMPONENTS_BUNDLE, join(STAGE, "packages/components/dist/oelt.min.js"));
 // Harness (preview).
 cpSync(join(REPO_ROOT, "harness"), join(STAGE, "harness"), {
   recursive: true,
-  filter: (src) => !src.includes("node_modules") && !src.endsWith(".state"),
+  // Ship only what preview needs — no test files, build state, or screenshots.
+  filter: (src) =>
+    !src.includes("node_modules") &&
+    !src.includes(".state") &&
+    !src.endsWith(".spec.ts") &&
+    !src.includes("/screenshots"),
 });
 
 console.log("Writing manifest.json…");

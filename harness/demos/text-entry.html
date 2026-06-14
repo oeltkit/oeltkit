@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oelt-text-entry demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>oelt-text-entry</h1>
+
+      <oelt-text-entry id="te-text" answer="Paris">
+        <p slot="prompt">What is the capital of France?</p>
+        <p slot="correct">Correct — Paris.</p>
+        <p slot="incorrect">Not quite — it's Paris.</p>
+      </oelt-text-entry>
+
+      <oelt-text-entry id="te-numeric" mode="numeric" answer="3.14" tolerance="0.01">
+        <p slot="prompt">Estimate π to two decimal places.</p>
+        <p slot="correct">Close enough.</p>
+        <p slot="incorrect">Try again — π ≈ 3.14.</p>
+      </oelt-text-entry>
+
+      <oelt-text-entry id="te-alts" answer="grey|gray">
+        <p slot="prompt">Spell the colour grey (either spelling).</p>
+      </oelt-text-entry>
+
+      <h2>Emitted interactions</h2>
+      <ul id="events"></ul>
+    </main>
+    <script>
+      addEventListener("oelt-interaction", (e) => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(e.detail);
+        document.getElementById("events").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

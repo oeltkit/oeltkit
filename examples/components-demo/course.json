@@ -26,6 +26,12 @@
           "title": "Media",
           "src": "pages/media.html",
           "interactions": [{ "id": "media1", "type": "media" }]
+        },
+        {
+          "id": "p-text",
+          "title": "Short answer",
+          "src": "pages/text-entry.html",
+          "interactions": [{ "id": "te1", "type": "fill-in" }]
         }
       ]
     }

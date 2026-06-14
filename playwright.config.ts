@@ -7,6 +7,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: ".",
   testMatch: "**/*.spec.ts",
+  // Never scan build output or deps (e.g. the .mcpb staging dir copies harness/).
+  testIgnore: ["**/dist/**", "**/node_modules/**"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   // Retry once: the suite runs many workers against three harness servers, so

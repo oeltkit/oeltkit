@@ -33,6 +33,38 @@ test.describe("oelt-mcq", () => {
   });
 });
 
+test.describe("oelt-text-entry", () => {
+  test("axe clean", async ({ page }) => {
+    await page.goto(`${DEMOS}/text-entry.html`);
+    await page.locator("oelt-text-entry[data-oelt-upgraded]").first().waitFor();
+    await axeClean(page);
+  });
+
+  test("keyboard-only: type + Enter emits a passed fill-in interaction", async ({ page }) => {
+    await page.goto(`${DEMOS}/text-entry.html`);
+    const input = page.locator("#te-text [part~='input']");
+    await input.focus();
+    await page.keyboard.type("paris"); // case-insensitive match
+    await page.keyboard.press("Enter"); // Enter in the input submits
+    await expect(events(page)).toContainText('"id":"te-text"');
+    await expect(events(page)).toContainText('"type":"fill-in"');
+    await expect(events(page)).toContainText('"result":"passed"');
+  });
+
+  test("numeric within tolerance passes; controls lock after submit", async ({ page }) => {
+    await page.goto(`${DEMOS}/text-entry.html`);
+    const entry = page.locator("#te-numeric");
+    await entry.locator("[part~='input']").fill("3.15");
+    await entry.getByRole("button", { name: "Check answer" }).click();
+    await expect(events(page).filter({ hasText: '"id":"te-numeric"' })).toContainText(
+      '"result":"passed"',
+    );
+    // Without `retry`, input + submit disable after the first submit.
+    await expect(entry.locator("[part~='input']")).toBeDisabled();
+    await expect(entry.getByRole("button", { name: "Check answer" })).toBeDisabled();
+  });
+});
+
 test.describe("oelt-branching", () => {
   test("axe clean", async ({ page }) => {
     await page.goto(`${DEMOS}/branching.html`);
@@ -95,6 +127,20 @@ test.describe("tracking visible in the fake-LMS harness", () => {
     await frame.getByRole("button", { name: "Check answer" }).click();
     // The runtime forwarded oelt-interaction → adapter recorded it.
     await expectScormValue(page, "cmi.interactions.0.id", "mcq1");
+    await expectScormValue(page, "cmi.interactions.0.result", "correct");
+  });
+
+  test("scorm12: answering oelt-text-entry records a fill-in cmi.interaction", async ({ page }) => {
+    await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
+    await page.goto(`${COURSE}/?mode=scorm12`);
+    const frame = page.frameLocator("#course-frame");
+    // Navigate to the Short answer page via the harness TOC.
+    await frame.locator("#c-toc").getByText("4. Short answer").click();
+    await expect(frame.locator("h1")).toHaveText("Short answer");
+    await frame.locator("#te1 [part~='input']").fill("cmi5");
+    await frame.getByRole("button", { name: "Check answer" }).click();
+    await expectScormValue(page, "cmi.interactions.0.id", "te1");
+    await expectScormValue(page, "cmi.interactions.0.type", "fill-in");
     await expectScormValue(page, "cmi.interactions.0.result", "correct");
   });
 });

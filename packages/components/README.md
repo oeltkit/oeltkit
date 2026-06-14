@@ -96,6 +96,33 @@ Wraps native `<video>`/`<audio>`; **refuses to render without captions or a tran
 
 A `<video>` without a captions track (and no transcript) renders a visible error instead of the player — this also fails `oelt validate a11y`. Emits `oelt-interaction` (`type: "media"`, `result: "completed"`) once past the threshold. Spec: [media.md](../../specs/components/media.md).
 
+## `<oelt-text-entry>` — short text / numeric response
+
+A single-line free-response question. Enhances the authored prompt into a native `<label>` + `<input>`; grades on submit and reports one `oelt-interaction`. Text mode matches case-insensitively after trimming/collapsing whitespace; numeric mode matches within an absolute `tolerance`.
+
+```html
+<!-- text: one accepted answer, or several via | -->
+<oelt-text-entry id="capital" answer="Paris">
+  <p slot="prompt">What is the capital of France?</p>
+  <p slot="correct">Correct — Paris.</p>
+  <p slot="incorrect">Not quite — it's Paris.</p>
+</oelt-text-entry>
+
+<!-- numeric with tolerance -->
+<oelt-text-entry id="pi" mode="numeric" answer="3.14" tolerance="0.01">
+  <p slot="prompt">Estimate π to two decimal places.</p>
+</oelt-text-entry>
+
+<!-- open response (no key): captured, marked completed -->
+<oelt-text-entry id="why" manual-grade>
+  <p slot="prompt">In a word, how did this lesson feel?</p>
+</oelt-text-entry>
+```
+
+`Enter` in the input submits. Emits `oelt-interaction` with `type: "fill-in"` (text) or `type: "numeric"`, `result` passed/failed (or `completed` for `manual-grade`), and `response` set to the raw input. `case-sensitive` forces exact-case text matching; `retry` allows re-answering. Spec: [text-entry.md](../../specs/components/text-entry.md).
+
+**Screen-reader:** the prompt is the input's `<label>`; on submit, focus moves to the `aria-live="polite"` feedback and correctness is conveyed in text (visually-hidden "Correct"/"Incorrect" prefix), never colour alone. Numeric mode uses `inputmode="decimal"` on a text input (not `type="number"`) for a numeric soft keyboard without spinbutton/locale pitfalls.
+
 ## Develop
 
 ```bash

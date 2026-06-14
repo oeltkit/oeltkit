@@ -56,7 +56,7 @@ Normalization (text mode): trim, collapse internal whitespace to a single space,
 Emits `oelt-interaction` (per [base.md §3](./base.md)) on submit:
 
 - **text**: `{ id, type:"fill-in", result: normalized(input) ∈ normalized(answers) ? "passed":"failed", score: passed?1:0, response: rawInput }`.
-- **numeric**: parse `input` as a number; if it is not a finite number → `failed`, `score:0`. Otherwise `passed` iff `|input − answer| ≤ tolerance`. `{ id, type:"numeric", result, score: passed?1:0, response: rawInput }`.
+- **numeric**: parse `input` as a number; if it is not a finite number → `failed`, `score:0`. Otherwise `passed` iff `|input − answer| ≤ tolerance`, compared float-safely (a magnitude-scaled epsilon is added to `tolerance`) so values exactly on the boundary pass **symmetrically** — e.g. with `answer=3.14 tolerance=0.01`, both `3.13` and `3.15` pass. `{ id, type:"numeric", result, score: passed?1:0, response: rawInput }`.
 - **manual-grade**: `{ id, type:"fill-in", result:"completed", response: rawInput }`, no `score`.
 
 Submitting an empty input shows "Enter an answer first." and does **not** emit. Without `retry`, the input + submit disable after the first submit and the interaction emits once.
