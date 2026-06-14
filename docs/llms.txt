@@ -17,9 +17,24 @@ oelt new my-course                       # scaffold course.json + pages/p1.html
 oelt validate my-course                  # schema + a11y + tracking checks (--json for machine output)
 oelt preview my-course                   # local fake-LMS harness with a live tracking panel
 oelt package my-course --target scorm12  # → my-course-id-scorm12.zip  (also: scorm2004 | cmi5 | web)
+oelt export my-course                    # → my-course.oeltcourse (single-file for transport/MCP)
+oelt import my-course.oeltcourse dest/   # extract .oeltcourse to a directory
 ```
 
 `oelt package` refuses to build if `oelt validate` finds errors. Fix them first.
+
+`validate`, `package`, and `preview` also accept a `.oeltcourse` file directly — they extract
+it to a temp directory, run the command, and clean up.
+
+### .oeltcourse (single-file format)
+
+A `.oeltcourse` file is a ZIP archive containing the standard course tree (`course.json` at the
+root plus all page and asset files). It is the exchange format between authoring tools, LLM
+clients, and CI pipelines. Round-trippable: `export → import → identical tree`.
+
+- Use `oelt export <dir>` to create one; `oelt import <file> <dir>` to extract.
+- Consumers (MCP server, oeltkit-cloud) call `oelt import` rather than reimplementing extraction
+  so zip-slip fixes propagate automatically.
 
 ## course.json (the manifest)
 
@@ -192,9 +207,14 @@ Identical content runs on every target; the runtime auto-detects the LMS at laun
 
 ## Validate & package
 
-`oelt validate <dir> [--json]` checks: schema, id uniqueness, declared interactions exist in the
-page HTML, media has captions/transcript, and tracking is reachable (e.g. a `required-interactions-*`
-rule has a required interaction; a `single-interaction` score names a real interaction).
+`oelt validate <dir|file.oeltcourse> [--json]` checks: schema, id uniqueness, declared interactions
+exist in the page HTML, media has captions/transcript, and tracking is reachable (e.g. a
+`required-interactions-*` rule has a required interaction; a `single-interaction` score names a real
+interaction).
+
+With `--json`, each finding includes `code` (machine-stable, for programmatic matching), `message`
+(terse technical description), and `message_human` (plain-language action sentence naming pages by
+title — suitable for displaying directly to the author or feeding back to an LLM for auto-fix).
 
 `oelt package <dir> --target <scorm12|scorm2004|cmi5|web> [--out file.zip]` generates the manifest
 (`imsmanifest.xml` / `cmi5.xml`) and a self-contained zip. Never hand-edit those manifests — they
