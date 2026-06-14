@@ -87,8 +87,13 @@ export function ensureStyles(): void {
 }
 
 const COMPONENT_CSS = `
-oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching, oelt-categorize, oelt-tabs, oelt-accordion, oelt-flip-cards, oelt-hotspot { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
+oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching, oelt-categorize, oelt-tabs, oelt-accordion, oelt-flip-cards, oelt-hotspot, oelt-reflection { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
 oelt-option, oelt-item, oelt-pair, oelt-bucket, oelt-token, oelt-tab, oelt-panel, oelt-card, oelt-area { display: none; }
+oelt-reflection [part~="prompt"] { display: block; margin-bottom: var(--oelt-space-2, .5rem); }
+oelt-reflection [part~="input"] { display: block; width: 100%; box-sizing: border-box; font: inherit; padding: var(--oelt-space-2, .5rem); border: 1px solid var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #fff); color: var(--oelt-color-fg, inherit); resize: vertical; }
+oelt-reflection [part~="count"] { font-size: .85em; opacity: .8; margin: var(--oelt-space-1, .25rem) 0; }
+oelt-reflection [part~="submit"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); border: 1px solid var(--oelt-color-primary, #357); background: var(--oelt-color-primary, #357); color: var(--oelt-color-bg, #fff); }
+oelt-reflection [part~="feedback"] { margin-top: var(--oelt-space-2, .5rem); outline: none; }
 oelt-hotspot [part~="stage"] { position: relative; display: inline-block; max-width: 100%; }
 oelt-hotspot [part~="image"] { display: block; max-width: 100%; height: auto; }
 oelt-hotspot [part~="hotspot"] { position: absolute; box-sizing: border-box; font: inherit; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: var(--oelt-space-1, .25rem); border: 2px solid var(--oelt-color-primary, #357); border-radius: var(--oelt-radius, 6px); background: color-mix(in srgb, var(--oelt-color-bg, #fff) 70%, transparent); color: var(--oelt-color-fg, inherit); }

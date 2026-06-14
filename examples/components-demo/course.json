@@ -68,6 +68,12 @@
           "title": "Hotspot",
           "src": "pages/hotspot.html",
           "interactions": [{ "id": "hotspot1", "type": "choice" }]
+        },
+        {
+          "id": "p-reflection",
+          "title": "Reflection",
+          "src": "pages/reflection.html",
+          "interactions": [{ "id": "reflect1", "type": "fill-in" }]
         }
       ]
     }

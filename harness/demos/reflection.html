@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oelt-reflection demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>oelt-reflection</h1>
+
+      <oelt-reflection id="takeaway" maxlength="200">
+        <p slot="prompt">What is one thing you will apply from this lesson?</p>
+      </oelt-reflection>
+
+      <h2>Emitted interactions</h2>
+      <ul id="events"></ul>
+
+      <h2>Evaluation-hook events (oelt-reflection)</h2>
+      <ul id="hooks"></ul>
+    </main>
+    <script>
+      addEventListener("oelt-interaction", (e) => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(e.detail);
+        document.getElementById("events").appendChild(li);
+      });
+      // Demonstrate the evaluation hook: log the event and use provideFeedback.
+      // (Production ships no evaluator; this is illustrative only.)
+      addEventListener("oelt-reflection", (e) => {
+        const li = document.createElement("li");
+        li.textContent = "hook fired for " + e.detail.id + ": " + e.detail.text;
+        document.getElementById("hooks").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

@@ -255,6 +255,18 @@ Select the correct region(s) on an image. **Accessible by design:** hotspots are
 
 `<oelt-area>` places a labelled hotspot by percentage of the image box (`x`/`y`/`w`/`h`, 0–100), marking answers with `correct`. The image needs `alt`. Hotspots are toggle buttons in a `role="group"` labelled by the prompt; graded exactly like `<oelt-mcq>` (`type: "choice"`, single or multiple with partial credit). Spec: [hotspot.md](../../specs/components/hotspot.md).
 
+## `<oelt-reflection>` — free-text reflection
+
+An open-ended written response. **Not auto-graded** — the text is captured and recorded as a `completed` interaction.
+
+```html
+<oelt-reflection id="takeaway" maxlength="500">
+  <p slot="prompt">What is one thing you will apply from this lesson?</p>
+</oelt-reflection>
+```
+
+A native `<textarea>` (prompt is its `<label>`, live character counter); `Enter` inserts newlines (it doesn't submit). On **Save** it emits `oelt-interaction` (`type: "fill-in"`, `result: "completed"`, no score) and fires the **evaluation hook** — an `oelt-reflection` `CustomEvent` `{ id, text, provideFeedback({ message }) }` so a future cloud LLM evaluator can assess the text and surface feedback. **v0 ships no evaluator** (the contract exists; evaluation is a Tier-3 cloud concern). Editable/revisable; resume-safe. Spec: [reflection.md](../../specs/components/reflection.md).
+
 ## Develop
 
 ```bash

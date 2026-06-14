@@ -375,6 +375,40 @@ test.describe("oelt-hotspot", () => {
   });
 });
 
+test.describe("oelt-reflection", () => {
+  test("axe clean", async ({ page }) => {
+    await page.goto(`${DEMOS}/reflection.html`);
+    await page.locator("oelt-reflection[data-oelt-upgraded]").waitFor();
+    await axeClean(page);
+  });
+
+  test("keyboard-only: type + Save emits a completed fill-in and fires the eval hook", async ({
+    page,
+  }) => {
+    await page.goto(`${DEMOS}/reflection.html`);
+    const r = page.locator("#takeaway");
+    await r.locator("[part~='input']").focus();
+    await page.keyboard.type("I will use cmi5 for new courses.");
+    await r.getByRole("button", { name: "Save" }).click();
+    // 1. completed (ungraded) interaction.
+    const ev = events(page).filter({ hasText: '"id":"takeaway"' });
+    await expect(ev).toContainText('"type":"fill-in"');
+    await expect(ev).toContainText('"result":"completed"');
+    await expect(ev).not.toContainText('"score"');
+    // 2. evaluation hook fired (the event contract; no evaluator in v0).
+    await expect(page.locator("#hooks li")).toContainText("hook fired for takeaway");
+    await expect(r.locator("[part~='feedback']")).toHaveText("Response saved.");
+  });
+
+  test("empty Save does not emit", async ({ page }) => {
+    await page.goto(`${DEMOS}/reflection.html`);
+    const r = page.locator("#takeaway");
+    await r.getByRole("button", { name: "Save" }).click();
+    await expect(r.locator("[part~='feedback']")).toHaveText("Write a response first.");
+    await expect(events(page).filter({ hasText: '"id":"takeaway"' })).toHaveCount(0);
+  });
+});
+
 test.describe("presentation: tabs / accordion / flip-cards", () => {
   test("axe clean (all three on one page)", async ({ page }) => {
     await page.goto(`${DEMOS}/presentation.html`);
@@ -577,5 +611,22 @@ test.describe("tracking visible in the fake-LMS harness", () => {
     await expectScormValue(page, "cmi.interactions.0.type", "choice");
     await expectScormValue(page, "cmi.interactions.0.result", "correct");
     await expectScormValue(page, "cmi.interactions.0.student_response", "nucleus");
+  });
+
+  test("scorm12: saving oelt-reflection records a neutral fill-in cmi.interaction", async ({
+    page,
+  }) => {
+    await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
+    await page.goto(`${COURSE}/?mode=scorm12`);
+    const frame = page.frameLocator("#course-frame");
+    await frame.locator("#c-toc").getByText("11. Reflection").click();
+    await expect(frame.locator("h1")).toHaveText("Reflection");
+    await frame.locator("#reflect1 [part~='input']").fill("cmi5 for new content");
+    await frame.locator("#reflect1").getByRole("button", { name: "Save" }).click();
+    await expectScormValue(page, "cmi.interactions.0.id", "reflect1");
+    await expectScormValue(page, "cmi.interactions.0.type", "fill-in");
+    // completed → neutral.
+    await expectScormValue(page, "cmi.interactions.0.result", "neutral");
+    await expectScormValue(page, "cmi.interactions.0.student_response", "cmi5 for new content");
   });
 });

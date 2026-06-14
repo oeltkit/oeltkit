@@ -26,6 +26,7 @@ describe("suspend-state budget (base.md §4)", () => {
       "oelt-matching",
       "oelt-categorize",
       "oelt-hotspot",
+      "oelt-reflection",
     ]) {
       expect(STATE_BUDGET_BYTES[name], `missing budget entry for ${name}`).toBeDefined();
     }
