@@ -141,6 +141,48 @@ test.describe("oelt-ordering", () => {
   });
 });
 
+test.describe("oelt-matching", () => {
+  test("axe clean", async ({ page }) => {
+    await page.goto(`${DEMOS}/matching.html`);
+    await page.locator("oelt-matching[data-oelt-upgraded]").first().waitFor();
+    await axeClean(page);
+  });
+
+  test("keyboard pick-up announces position and moves across targets", async ({ page }) => {
+    await page.goto(`${DEMOS}/matching.html`);
+    const live = page.locator('#match [role="status"][aria-live="assertive"]');
+    await page.locator("#match").getByRole("button", { name: "Paris", exact: true }).focus();
+    await page.keyboard.press("Space"); // pick up from the bank
+    await expect(live).toContainText(/Grabbed Paris\. Bank\./);
+    await page.keyboard.press("ArrowLeft"); // bank → last target (Egypt)
+    await expect(live).toContainText("Target: Egypt.");
+    await page.keyboard.press("Escape");
+    await expect(live).toContainText(/Cancelled/);
+  });
+
+  test("keyboard-only: solve the 2-pair match and Check → passed", async ({ page }) => {
+    await page.goto(`${DEMOS}/matching.html`);
+    const m = page.locator("#match2"); // prompts: France(t0), Japan(t1); bank cursor = 2
+    // Paris → France: pick up (cursor=bank=2), ArrowLeft x2 → t0, drop.
+    await m.getByRole("button", { name: "Paris", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("Space");
+    // Tokyo → Japan: pick up (cursor=bank=2), ArrowLeft x1 → t1, drop.
+    await m.getByRole("button", { name: "Tokyo", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("Space");
+    await m.getByRole("button", { name: "Check matches" }).click();
+    const ev = events(page).filter({ hasText: '"id":"match2"' });
+    await expect(ev).toHaveCount(1);
+    await expect(ev).toContainText('"type":"matching"');
+    await expect(ev).toContainText('"result":"passed"');
+    await expect(ev).toContainText("France=paris,Japan=tokyo");
+  });
+});
+
 test.describe("oelt-quiz", () => {
   test("axe clean", async ({ page }) => {
     await page.goto(`${DEMOS}/quiz.html`);
@@ -324,5 +366,28 @@ test.describe("tracking visible in the fake-LMS harness", () => {
     await expectScormValue(page, "cmi.interactions.0.type", "sequencing");
     await expectScormValue(page, "cmi.interactions.0.result", "correct");
     await expectScormValue(page, "cmi.interactions.0.student_response", "first,second");
+  });
+
+  test("scorm12: solving oelt-matching records a matching cmi.interaction", async ({ page }) => {
+    await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
+    await page.goto(`${COURSE}/?mode=scorm12`);
+    const frame = page.frameLocator("#course-frame");
+    await frame.locator("#c-toc").getByText("8. Matching").click();
+    await expect(frame.locator("h1")).toHaveText("Matching");
+    // France(t0), Japan(t1); bank cursor = 2.
+    await frame.locator("#match1").getByRole("button", { name: "Paris", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("Space");
+    await frame.locator("#match1").getByRole("button", { name: "Tokyo", exact: true }).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowLeft");
+    await page.keyboard.press("Space");
+    await frame.getByRole("button", { name: "Check matches" }).click();
+    await expectScormValue(page, "cmi.interactions.0.id", "match1");
+    await expectScormValue(page, "cmi.interactions.0.type", "matching");
+    await expectScormValue(page, "cmi.interactions.0.result", "correct");
+    await expectScormValue(page, "cmi.interactions.0.student_response", "France=paris,Japan=tokyo");
   });
 });

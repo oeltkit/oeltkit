@@ -10,6 +10,7 @@ import { OeltTextEntry } from "./text-entry.js";
 import { OeltQuiz } from "./quiz.js";
 import { OeltLikert } from "./likert.js";
 import { OeltOrdering, OeltItem } from "./ordering.js";
+import { OeltMatching, OeltPair } from "./matching.js";
 
 export { OeltElement } from "./base.js";
 export { OeltMcq, OeltOption } from "./mcq.js";
@@ -19,11 +20,13 @@ export { OeltTextEntry } from "./text-entry.js";
 export { OeltQuiz } from "./quiz.js";
 export { OeltLikert } from "./likert.js";
 export { OeltOrdering, OeltItem } from "./ordering.js";
+export { OeltMatching, OeltPair } from "./matching.js";
 export { grade } from "./grade.js";
 export { gradeText, gradeNumeric } from "./grade-text.js";
 export { aggregateScore, quizGrade, selectPool, itemScore } from "./quiz-grade.js";
 export { likertScale } from "./likert-scale.js";
-export { gradeByPosition, shuffle, shuffleDifferent } from "./dnd.js";
+export { gradeByPosition, shuffle, shuffleDifferent, GrabController } from "./dnd.js";
+export { gradeMatching } from "./matching-grade.js";
 
 /** Register every component (idempotent). Called automatically on import. */
 export function defineComponents(): void {
@@ -37,6 +40,8 @@ export function defineComponents(): void {
     ["oelt-likert", OeltLikert],
     ["oelt-item", OeltItem],
     ["oelt-ordering", OeltOrdering],
+    ["oelt-pair", OeltPair],
+    ["oelt-matching", OeltMatching],
   ];
   if (typeof customElements === "undefined") return;
   for (const [name, ctor] of reg) if (!customElements.get(name)) customElements.define(name, ctor);

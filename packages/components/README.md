@@ -181,7 +181,22 @@ Reorder items into the correct sequence. **Keyboard-first** drag-and-drop (the f
 
 Authored order is correct; items start shuffled. **Keyboard:** focus an item, `Space` to pick up, `↑`/`↓` to move, `Space` to drop, `Esc` to cancel — every step announced via an assertive live region. On **Check** emits `oelt-interaction` (`type: "sequencing"`, `score` = fraction in the correct position, `passed` iff exact, `response` = ordered values). Spec: [ordering.md](../../specs/components/ordering.md).
 
-> The drag-and-drop family (`<oelt-ordering>`, and the upcoming `<oelt-matching>` / `<oelt-categorize>`) share one keyboard pick-up/move/drop model, documented once in [dnd-family.md](../../specs/components/dnd-family.md). Native `<button>` items, no deprecated `aria-grabbed`, SR announcement on every state change, `prefers-reduced-motion` honored.
+## `<oelt-matching>` — match values to prompts
+
+Assign each value to its correct prompt. Same keyboard-first model as ordering.
+
+```html
+<oelt-matching id="capitals">
+  <p slot="prompt">Match each country to its capital.</p>
+  <oelt-pair prompt="France" value="paris">Paris</oelt-pair>
+  <oelt-pair prompt="Japan" value="tokyo">Tokyo</oelt-pair>
+  <oelt-pair prompt="Egypt" value="cairo">Cairo</oelt-pair>
+</oelt-matching>
+```
+
+Values start shuffled in a bank. **Keyboard:** focus a value, `Space` to pick up, `←`/`→` to move it across the prompt targets (and the bank), `Space` to drop, `Esc` to cancel — every step announced. One value per target (dropping displaces the previous one to the bank). On **Check** emits `oelt-interaction` (`type: "matching"`, `score` = fraction of targets holding the correct value, `passed` iff all, `response` = `prompt=value` pairs). Spec: [matching.md](../../specs/components/matching.md).
+
+> The drag-and-drop family (`<oelt-ordering>`, `<oelt-matching>`, and the upcoming `<oelt-categorize>`) share one keyboard pick-up/move/drop model, documented once in [dnd-family.md](../../specs/components/dnd-family.md) and implemented by a shared `GrabController`. Native `<button>` items, no deprecated `aria-grabbed`, SR announcement on every state change, `prefers-reduced-motion` honored.
 
 ## Develop
 

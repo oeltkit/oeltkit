@@ -87,8 +87,21 @@ export function ensureStyles(): void {
 }
 
 const COMPONENT_CSS = `
-oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
-oelt-option, oelt-item { display: none; }
+oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering, oelt-matching { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
+oelt-option, oelt-item, oelt-pair { display: none; }
+oelt-matching [part~="prompts"] { list-style: none; margin: var(--oelt-space-3, 1rem) 0; padding: 0; display: flex; flex-direction: column; gap: var(--oelt-space-2, .5rem); }
+oelt-matching [part~="prompt-row"] { display: flex; align-items: center; gap: var(--oelt-space-3, 1rem); }
+oelt-matching [part~="prompt-label"] { min-width: 8rem; }
+oelt-matching [part~="target"] { flex: 1; min-height: 2.2rem; padding: var(--oelt-space-1, .25rem); border: 1px dashed var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); }
+oelt-matching [part~="target"][part~="cursor"], oelt-matching [part~="bank"][part~="cursor"] { outline: 2px solid var(--oelt-color-primary, #357); outline-offset: 2px; }
+oelt-matching [part~="target"][part~="correct"] { border-color: var(--oelt-color-correct, #1a7f4b); border-style: solid; }
+oelt-matching [part~="target"][part~="incorrect"] { border-color: var(--oelt-color-incorrect, #b3261e); border-style: solid; }
+oelt-matching [part~="bank"] { display: flex; flex-wrap: wrap; gap: var(--oelt-space-2, .5rem); margin: var(--oelt-space-3, 1rem) 0; padding: var(--oelt-space-2, .5rem); border: 1px dashed var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); min-height: 2.2rem; }
+oelt-matching [part~="value"] { font: inherit; cursor: grab; padding: var(--oelt-space-1, .25rem) var(--oelt-space-3, 1rem); border: 1px solid var(--oelt-color-primary, #357); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #fff); color: var(--oelt-color-fg, inherit); }
+oelt-matching [part~="value"][part~="grabbed"] { cursor: grabbing; outline: 2px solid var(--oelt-color-primary, #357); outline-offset: 2px; }
+oelt-matching [part~="submit"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); border: 1px solid var(--oelt-color-primary, #357); background: var(--oelt-color-primary, #357); color: var(--oelt-color-bg, #fff); }
+oelt-matching [part~="submit"]:disabled { opacity: .5; cursor: default; }
+oelt-matching [part~="feedback"] { margin-top: var(--oelt-space-2, .5rem); outline: none; }
 oelt-ordering [part~="list"] { margin: var(--oelt-space-3, 1rem) 0; padding-left: var(--oelt-space-4, 1.5rem); display: flex; flex-direction: column; gap: var(--oelt-space-2, .5rem); }
 oelt-ordering [part~="item"] { font: inherit; cursor: grab; text-align: left; width: 100%; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border: 1px solid var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #fff); color: var(--oelt-color-fg, inherit); }
 oelt-ordering [part~="item"][part~="grabbed"] { cursor: grabbing; outline: 2px solid var(--oelt-color-primary, #357); outline-offset: 2px; background: var(--oelt-color-bg, #eef0f4); }

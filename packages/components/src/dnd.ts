@@ -1,10 +1,64 @@
 // Shared helpers for the drag-and-drop family (ordering / matching / categorize).
-// See specs/components/dnd-family.md. The reusable pieces today are: a live-region
-// announcer and the position-fraction grading used by all three. The full
-// grab/move/drop controller is currently inlined in <oelt-ordering>; it will be
-// lifted here once a second family member (matching) validates the abstraction.
+// See specs/components/dnd-family.md. Reusable pieces: a live-region announcer,
+// the keyboard pick-up/move/drop key dispatcher (GrabController), and the
+// position-fraction grading used by all three. Each component implements GrabHost
+// with its own data semantics; the key→intent mapping is identical family-wide.
 
 import type { InteractionResult } from "./base.js";
+
+/**
+ * Host that owns the actual data mutation for a grab interaction. GrabController
+ * maps keyboard events to these intents; the host decides what they mean
+ * (reorder a list, reassign a target, …) and clamps out-of-range moves.
+ */
+export interface GrabHost {
+  isGrabbed(): boolean;
+  pickUp(index: number): void;
+  /** delta -1 = previous (ArrowUp/Left), +1 = next (ArrowDown/Right). */
+  move(delta: -1 | 1): void;
+  drop(): void;
+  cancel(): void;
+}
+
+/**
+ * Family keyboard model (dnd-family.md §3), shared verbatim by every member:
+ * Space/Enter toggles pick-up/drop, arrows move while grabbed, Escape cancels.
+ * Both arrow axes are accepted (a member may lay out vertically or horizontally).
+ */
+export class GrabController {
+  constructor(private readonly host: GrabHost) {}
+
+  handleKey(e: KeyboardEvent, index: number): void {
+    switch (e.key) {
+      case " ":
+      case "Enter":
+        e.preventDefault();
+        if (this.host.isGrabbed()) this.host.drop();
+        else this.host.pickUp(index);
+        break;
+      case "ArrowUp":
+      case "ArrowLeft":
+        if (this.host.isGrabbed()) {
+          e.preventDefault();
+          this.host.move(-1);
+        }
+        break;
+      case "ArrowDown":
+      case "ArrowRight":
+        if (this.host.isGrabbed()) {
+          e.preventDefault();
+          this.host.move(1);
+        }
+        break;
+      case "Escape":
+        if (this.host.isGrabbed()) {
+          e.preventDefault();
+          this.host.cancel();
+        }
+        break;
+    }
+  }
+}
 
 /**
  * Manages a single visually-hidden assertive live region for SR announcements

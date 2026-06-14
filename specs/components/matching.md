@@ -58,7 +58,7 @@ Family model ([dnd-family.md §3–4](./dnd-family.md)). `{position}` is announc
 
 ## 7. State
 
-Key: the element id. Value: `{ placed: Record<string, string> }` — a map of `value → prompt` for placed values (unplaced values are absent). **Max 512 bytes.** On resume, restore placements without re-emitting.
+Key: the element id. Value: `{ placed: Record<string, string>, submitted: boolean }` — a map of `value → prompt` for placed values (unplaced values are absent) plus the submitted flag. **Max 512 bytes.** On resume, restore placements and submitted/locked UI without re-emitting.
 
 ## 8. Tracking mapping
 

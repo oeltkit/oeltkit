@@ -4,7 +4,7 @@
 // pointer drag (enhancement). Grades current order vs the authored order.
 
 import { OeltElement, ensureStyles } from "./base.js";
-import { LiveAnnouncer, gradeByPosition, shuffleDifferent } from "./dnd.js";
+import { LiveAnnouncer, GrabController, gradeByPosition, shuffleDifferent } from "./dnd.js";
 
 /** Inert data-carrier for an orderable item (consumed on upgrade). */
 export class OeltItem extends HTMLElement {}
@@ -25,6 +25,13 @@ export class OeltOrdering extends OeltElement {
   #ol!: HTMLOListElement;
   #feedback!: HTMLElement;
   #announcer = new LiveAnnouncer();
+  #grabCtl = new GrabController({
+    isGrabbed: () => this.#grabbed !== null,
+    pickUp: (i) => this.#grab(i),
+    move: (d) => this.#move(d),
+    drop: () => this.#drop(),
+    cancel: () => this.#cancel(),
+  });
 
   connectedCallback(): void {
     ensureStyles();
@@ -88,38 +95,12 @@ export class OeltOrdering extends OeltElement {
   }
 
   #wire(): void {
-    // Keyboard pick-up / move / drop (dnd-family.md §3), delegated on the list.
+    // Keyboard pick-up / move / drop (dnd-family.md §3) via the shared controller.
     this.#ol.addEventListener("keydown", (e) => {
       if (this.#locked) return;
       const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('[part~="item"]');
       if (!btn) return;
-      const i = Number(btn.dataset.i);
-      switch (e.key) {
-        case " ":
-        case "Enter":
-          e.preventDefault();
-          if (this.#grabbed === null) this.#grab(i);
-          else this.#drop();
-          break;
-        case "ArrowUp":
-          if (this.#grabbed !== null) {
-            e.preventDefault();
-            this.#move(-1);
-          }
-          break;
-        case "ArrowDown":
-          if (this.#grabbed !== null) {
-            e.preventDefault();
-            this.#move(1);
-          }
-          break;
-        case "Escape":
-          if (this.#grabbed !== null) {
-            e.preventDefault();
-            this.#cancel();
-          }
-          break;
-      }
+      this.#grabCtl.handleKey(e, Number(btn.dataset.i));
     });
 
     // Pointer drag (enhancement) — commits the same state, syncs the announcer.
