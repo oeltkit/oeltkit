@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oelt-ordering demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>oelt-ordering</h1>
+
+      <oelt-ordering id="ord">
+        <p slot="prompt">Put the lifecycle steps in order, first to last.</p>
+        <oelt-item value="plan">Plan</oelt-item>
+        <oelt-item value="build">Build</oelt-item>
+        <oelt-item value="test">Test</oelt-item>
+        <oelt-item value="ship">Ship</oelt-item>
+      </oelt-ordering>
+
+      <!-- Two items start reversed (shuffleDifferent), so one move solves it. -->
+      <oelt-ordering id="ord2">
+        <p slot="prompt">Order: First, then Second.</p>
+        <oelt-item value="first">First</oelt-item>
+        <oelt-item value="second">Second</oelt-item>
+      </oelt-ordering>
+
+      <h2>Emitted interactions</h2>
+      <ul id="events"></ul>
+    </main>
+    <script>
+      addEventListener("oelt-interaction", (e) => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(e.detail);
+        document.getElementById("events").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

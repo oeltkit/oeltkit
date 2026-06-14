@@ -87,8 +87,16 @@ export function ensureStyles(): void {
 }
 
 const COMPONENT_CSS = `
-oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
-oelt-option { display: none; }
+oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert, oelt-ordering { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
+oelt-option, oelt-item { display: none; }
+oelt-ordering [part~="list"] { margin: var(--oelt-space-3, 1rem) 0; padding-left: var(--oelt-space-4, 1.5rem); display: flex; flex-direction: column; gap: var(--oelt-space-2, .5rem); }
+oelt-ordering [part~="item"] { font: inherit; cursor: grab; text-align: left; width: 100%; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border: 1px solid var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #fff); color: var(--oelt-color-fg, inherit); }
+oelt-ordering [part~="item"][part~="grabbed"] { cursor: grabbing; outline: 2px solid var(--oelt-color-primary, #357); outline-offset: 2px; background: var(--oelt-color-bg, #eef0f4); }
+oelt-ordering [part~="item"][part~="correct"] { border-color: var(--oelt-color-correct, #1a7f4b); color: var(--oelt-color-correct, #1a7f4b); }
+oelt-ordering [part~="item"][part~="incorrect"] { border-color: var(--oelt-color-incorrect, #b3261e); color: var(--oelt-color-incorrect, #b3261e); }
+oelt-ordering [part~="submit"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); border: 1px solid var(--oelt-color-primary, #357); background: var(--oelt-color-primary, #357); color: var(--oelt-color-bg, #fff); }
+oelt-ordering [part~="submit"]:disabled { opacity: .5; cursor: default; }
+oelt-ordering [part~="feedback"] { margin-top: var(--oelt-space-2, .5rem); outline: none; }
 oelt-likert fieldset { border: 1px solid var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); padding: var(--oelt-space-3, 1rem); }
 oelt-likert [part~="option-label"] { display: flex; gap: var(--oelt-space-2, .5rem); align-items: baseline; padding: var(--oelt-space-1, .25rem) 0; }
 oelt-likert [part~="submit"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); border: 1px solid var(--oelt-color-primary, #357); background: var(--oelt-color-primary, #357); color: var(--oelt-color-bg, #fff); }

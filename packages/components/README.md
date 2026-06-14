@@ -165,6 +165,24 @@ A single-select rating scale. Survey semantics: no correct answer, so it emits `
 
 Emits `oelt-interaction` (`type: "likert"`, `result: "completed"`, `response` = chosen value). Built on a native `<fieldset>` of radios — arrow keys move/select, the prompt is the `<legend>`. In generated mode the end anchors fold into the first/last radio labels ("1 — Very hard"). Spec: [likert.md](../../specs/components/likert.md).
 
+## `<oelt-ordering>` — sequence / ranking
+
+Reorder items into the correct sequence. **Keyboard-first** drag-and-drop (the family model — see [dnd-family.md](../../specs/components/dnd-family.md)); pointer drag is an enhancement.
+
+```html
+<oelt-ordering id="lifecycle">
+  <p slot="prompt">Put the steps in order, first to last.</p>
+  <oelt-item value="plan">Plan</oelt-item>
+  <oelt-item value="build">Build</oelt-item>
+  <oelt-item value="test">Test</oelt-item>
+  <oelt-item value="ship">Ship</oelt-item>
+</oelt-ordering>
+```
+
+Authored order is correct; items start shuffled. **Keyboard:** focus an item, `Space` to pick up, `↑`/`↓` to move, `Space` to drop, `Esc` to cancel — every step announced via an assertive live region. On **Check** emits `oelt-interaction` (`type: "sequencing"`, `score` = fraction in the correct position, `passed` iff exact, `response` = ordered values). Spec: [ordering.md](../../specs/components/ordering.md).
+
+> The drag-and-drop family (`<oelt-ordering>`, and the upcoming `<oelt-matching>` / `<oelt-categorize>`) share one keyboard pick-up/move/drop model, documented once in [dnd-family.md](../../specs/components/dnd-family.md). Native `<button>` items, no deprecated `aria-grabbed`, SR announcement on every state change, `prefers-reduced-motion` honored.
+
 ## Develop
 
 ```bash

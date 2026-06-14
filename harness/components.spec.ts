@@ -98,6 +98,49 @@ test.describe("oelt-likert", () => {
   });
 });
 
+test.describe("oelt-ordering", () => {
+  test("axe clean", async ({ page }) => {
+    await page.goto(`${DEMOS}/ordering.html`);
+    await page.locator("oelt-ordering[data-oelt-upgraded]").first().waitFor();
+    await axeClean(page);
+  });
+
+  test("keyboard pick-up/move/drop announces every state change", async ({ page }) => {
+    await page.goto(`${DEMOS}/ordering.html`);
+    const live = page.locator('#ord [role="status"][aria-live="assertive"]');
+    const first = page.locator("#ord [part~='item']").first();
+    await first.focus();
+    await page.keyboard.press("Space"); // pick up
+    await expect(live).toContainText(/Grabbed .*Position 1 of 4/);
+    await page.keyboard.press("ArrowDown"); // move down
+    await expect(live).toContainText("Position 2 of 4.");
+    await page.keyboard.press("Space"); // drop
+    await expect(live).toContainText(/Dropped .*Position 2 of 4/);
+    // Escape after a fresh pick-up cancels back.
+    await page.locator("#ord [part~='item']").nth(1).focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowUp");
+    await page.keyboard.press("Escape");
+    await expect(live).toContainText(/Cancelled/);
+  });
+
+  test("keyboard-only: solve the 2-item order and Check → passed", async ({ page }) => {
+    await page.goto(`${DEMOS}/ordering.html`);
+    // Two distinct items always start reversed (shuffleDifferent): [Second, First].
+    const ord = page.locator("#ord2");
+    await ord.locator("[part~='item']").first().focus();
+    await page.keyboard.press("Space"); // pick up "Second" at index 0
+    await page.keyboard.press("ArrowDown"); // → [First, Second]
+    await page.keyboard.press("Space"); // drop
+    await ord.getByRole("button", { name: "Check order" }).click();
+    const ev = events(page).filter({ hasText: '"id":"ord2"' });
+    await expect(ev).toHaveCount(1);
+    await expect(ev).toContainText('"type":"sequencing"');
+    await expect(ev).toContainText('"result":"passed"');
+    await expect(ev).toContainText('"response":"first,second"');
+  });
+});
+
 test.describe("oelt-quiz", () => {
   test("axe clean", async ({ page }) => {
     await page.goto(`${DEMOS}/quiz.html`);
@@ -263,5 +306,23 @@ test.describe("tracking visible in the fake-LMS harness", () => {
     // Survey "completed" maps to SCORM result "neutral".
     await expectScormValue(page, "cmi.interactions.0.result", "neutral");
     await expectScormValue(page, "cmi.interactions.0.student_response", "4");
+  });
+
+  test("scorm12: solving oelt-ordering records a sequencing cmi.interaction", async ({ page }) => {
+    await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
+    await page.goto(`${COURSE}/?mode=scorm12`);
+    const frame = page.frameLocator("#course-frame");
+    await frame.locator("#c-toc").getByText("7. Ordering").click();
+    await expect(frame.locator("h1")).toHaveText("Ordering");
+    // 2 distinct items start reversed; one move solves it.
+    await frame.locator("#order1 [part~='item']").first().focus();
+    await page.keyboard.press("Space");
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Space");
+    await frame.getByRole("button", { name: "Check order" }).click();
+    await expectScormValue(page, "cmi.interactions.0.id", "order1");
+    await expectScormValue(page, "cmi.interactions.0.type", "sequencing");
+    await expectScormValue(page, "cmi.interactions.0.result", "correct");
+    await expectScormValue(page, "cmi.interactions.0.student_response", "first,second");
   });
 });

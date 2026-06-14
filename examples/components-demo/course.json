@@ -44,6 +44,12 @@
           "title": "Survey",
           "src": "pages/likert.html",
           "interactions": [{ "id": "survey1", "type": "likert" }]
+        },
+        {
+          "id": "p-ordering",
+          "title": "Ordering",
+          "src": "pages/ordering.html",
+          "interactions": [{ "id": "order1", "type": "sequencing" }]
         }
       ]
     }
