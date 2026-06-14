@@ -87,8 +87,13 @@ export function ensureStyles(): void {
 }
 
 const COMPONENT_CSS = `
-oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
+oelt-mcq, oelt-branching, oelt-media, oelt-text-entry, oelt-quiz, oelt-likert { display: block; margin: var(--oelt-space-3, 1rem) 0; color: var(--oelt-color-fg, inherit); font: var(--oelt-font, inherit); }
 oelt-option { display: none; }
+oelt-likert fieldset { border: 1px solid var(--oelt-color-fg, #8889); border-radius: var(--oelt-radius, 6px); padding: var(--oelt-space-3, 1rem); }
+oelt-likert [part~="option-label"] { display: flex; gap: var(--oelt-space-2, .5rem); align-items: baseline; padding: var(--oelt-space-1, .25rem) 0; }
+oelt-likert [part~="submit"] { font: inherit; cursor: pointer; padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); border: 1px solid var(--oelt-color-primary, #357); background: var(--oelt-color-primary, #357); color: var(--oelt-color-bg, #fff); }
+oelt-likert [part~="submit"]:disabled { opacity: .5; cursor: default; }
+oelt-likert [part~="feedback"] { margin-top: var(--oelt-space-2, .5rem); }
 oelt-quiz [part~="status"] { margin-top: var(--oelt-space-3, 1rem); padding: var(--oelt-space-2, .5rem) var(--oelt-space-3, 1rem); border-radius: var(--oelt-radius, 6px); background: var(--oelt-color-bg, #f5f6f8); border: 1px solid var(--oelt-color-fg, #8889); }
 oelt-quiz [part~="status"][part~="passed"] { color: var(--oelt-color-correct, #1a7f4b); border-color: var(--oelt-color-correct, #1a7f4b); }
 oelt-quiz [part~="status"][part~="failed"] { color: var(--oelt-color-incorrect, #b3261e); border-color: var(--oelt-color-incorrect, #b3261e); }

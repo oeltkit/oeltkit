@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>oelt-likert demo</title>
+    <script src="/components/oelt.min.js"></script>
+  </head>
+  <body>
+    <main>
+      <h1>oelt-likert</h1>
+
+      <oelt-likert id="lk-explicit">
+        <p slot="prompt">I feel confident applying what I learned.</p>
+        <oelt-option value="1">Strongly disagree</oelt-option>
+        <oelt-option value="2">Disagree</oelt-option>
+        <oelt-option value="3">Neutral</oelt-option>
+        <oelt-option value="4">Agree</oelt-option>
+        <oelt-option value="5">Strongly agree</oelt-option>
+      </oelt-likert>
+
+      <oelt-likert id="lk-generated" scale="5" low-label="Very hard" high-label="Very easy">
+        <p slot="prompt">How easy was this lesson?</p>
+      </oelt-likert>
+
+      <h2>Emitted interactions</h2>
+      <ul id="events"></ul>
+    </main>
+    <script>
+      addEventListener("oelt-interaction", (e) => {
+        const li = document.createElement("li");
+        li.textContent = JSON.stringify(e.detail);
+        document.getElementById("events").appendChild(li);
+      });
+    </script>
+  </body>
+</html>

@@ -65,6 +65,39 @@ test.describe("oelt-text-entry", () => {
   });
 });
 
+test.describe("oelt-likert", () => {
+  test("axe clean (explicit + generated scales)", async ({ page }) => {
+    await page.goto(`${DEMOS}/likert.html`);
+    await page.locator("oelt-likert[data-oelt-upgraded]").first().waitFor();
+    await axeClean(page);
+  });
+
+  test("generated scale folds end anchors into the end labels", async ({ page }) => {
+    await page.goto(`${DEMOS}/likert.html`);
+    const gen = page.locator("#lk-generated");
+    await expect(gen.getByRole("radio", { name: "1 — Very hard" })).toBeVisible();
+    await expect(gen.getByRole("radio", { name: "5 — Very easy" })).toBeVisible();
+  });
+
+  test("keyboard-only: pick a rating + submit emits a completed likert interaction", async ({
+    page,
+  }) => {
+    await page.goto(`${DEMOS}/likert.html`);
+    const lk = page.locator("#lk-explicit");
+    // exact: "Agree" is a substring of Disagree / Strongly (dis)agree.
+    await lk.getByRole("radio", { name: "Agree", exact: true }).focus();
+    await page.keyboard.press("Space"); // select the focused radio
+    await lk.getByRole("button", { name: "Submit" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(events(page)).toContainText('"id":"lk-explicit"');
+    await expect(events(page)).toContainText('"type":"likert"');
+    await expect(events(page)).toContainText('"result":"completed"');
+    await expect(events(page)).toContainText('"response":"4"');
+    // No score on a survey item.
+    await expect(events(page).filter({ hasText: '"id":"lk-explicit"' })).not.toContainText('"score"');
+  });
+});
+
 test.describe("oelt-quiz", () => {
   test("axe clean", async ({ page }) => {
     await page.goto(`${DEMOS}/quiz.html`);
@@ -213,5 +246,22 @@ test.describe("tracking visible in the fake-LMS harness", () => {
     await expectScormValue(page, "cmi.interactions.2.id", "quizfinal");
     await expectScormValue(page, "cmi.interactions.2.type", "performance");
     await expectScormValue(page, "cmi.interactions.2.result", "correct");
+  });
+
+  test("scorm12: answering oelt-likert records a neutral likert cmi.interaction", async ({
+    page,
+  }) => {
+    await page.request.delete(`${COURSE}/api/state?mode=scorm12`);
+    await page.goto(`${COURSE}/?mode=scorm12`);
+    const frame = page.frameLocator("#course-frame");
+    await frame.locator("#c-toc").getByText("6. Survey").click();
+    await expect(frame.locator("h1")).toHaveText("Survey");
+    await frame.locator("#survey1").getByRole("radio", { name: "Agree", exact: true }).check();
+    await frame.locator("#survey1").getByRole("button", { name: "Submit" }).click();
+    await expectScormValue(page, "cmi.interactions.0.id", "survey1");
+    await expectScormValue(page, "cmi.interactions.0.type", "likert");
+    // Survey "completed" maps to SCORM result "neutral".
+    await expectScormValue(page, "cmi.interactions.0.result", "neutral");
+    await expectScormValue(page, "cmi.interactions.0.student_response", "4");
   });
 });

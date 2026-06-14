@@ -144,6 +144,27 @@ Each question may carry a `weight` (default 1); the quiz score is `Σ(weightᵢ�
 
 **Screen-reader:** a `::part(status)` live region announces progress ("Answered 1 of 2 questions") and the final outcome ("Quiz complete. Score 75%."); pooled-out questions get `hidden`. Spec: [quiz.md](../../specs/components/quiz.md).
 
+## `<oelt-likert>` — rating-scale / survey item
+
+A single-select rating scale. Survey semantics: no correct answer, so it emits `result: "completed"` with no score (and the quiz ignores it). Give explicit labels per point, or generate a numeric scale with end anchors.
+
+```html
+<!-- explicit labels (recommended) -->
+<oelt-likert id="confidence">
+  <p slot="prompt">I feel confident applying what I learned.</p>
+  <oelt-option value="1">Strongly disagree</oelt-option>
+  <oelt-option value="3">Neutral</oelt-option>
+  <oelt-option value="5">Strongly agree</oelt-option>
+</oelt-likert>
+
+<!-- generated N-point scale with end anchors -->
+<oelt-likert id="ease" scale="5" low-label="Very hard" high-label="Very easy">
+  <p slot="prompt">How easy was this lesson?</p>
+</oelt-likert>
+```
+
+Emits `oelt-interaction` (`type: "likert"`, `result: "completed"`, `response` = chosen value). Built on a native `<fieldset>` of radios — arrow keys move/select, the prompt is the `<legend>`. In generated mode the end anchors fold into the first/last radio labels ("1 — Very hard"). Spec: [likert.md](../../specs/components/likert.md).
+
 ## Develop
 
 ```bash

@@ -13,6 +13,7 @@ export const STATE_BUDGET_BYTES: Readonly<Record<string, number>> = {
   "oelt-media": 48, // media.md §9
   "oelt-text-entry": 256, // text-entry.md §8
   "oelt-quiz": 512, // quiz.md §8
+  "oelt-likert": 48, // likert.md §8
 };
 
 /** Total suspend budget (bytes). 3 KB leaves ~1 KB headroom under SCORM 1.2's 4 KB. */

@@ -38,6 +38,12 @@
           "title": "Quiz",
           "src": "pages/quiz.html",
           "interactions": [{ "id": "quizfinal", "type": "performance", "required": true }]
+        },
+        {
+          "id": "p-survey",
+          "title": "Survey",
+          "src": "pages/likert.html",
+          "interactions": [{ "id": "survey1", "type": "likert" }]
         }
       ]
     }
