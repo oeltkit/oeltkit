@@ -53,6 +53,8 @@ describe("validateCourse cross-checks", () => {
 
   const load = (course: CourseManifest): LoadedCourse => ({ dir, course });
   const codes = (c: CourseManifest) => validateCourse(load(c)).map((f) => f.code);
+  const allHaveMessageHuman = (c: CourseManifest) =>
+    validateCourse(load(c)).every((f) => typeof f.message_human === "string" && f.message_human.length > 0);
 
   it("passes when a declared interaction exists in the page HTML", () => {
     const c = base({
@@ -92,15 +94,22 @@ describe("validateCourse cross-checks", () => {
       ],
     });
     expect(codes(c)).toContain("interaction-missing");
+    expect(allHaveMessageHuman(c)).toBe(true);
+    const finding = validateCourse(load(c)).find((f) => f.code === "interaction-missing")!;
+    expect(finding.message_human).toContain("P1"); // page title
+    expect(finding.message_human).toContain("q1"); // interaction id
   });
 
   it("flags <oelt-media> without captions or a transcript", () => {
     const c = base({
       structure: [
-        { id: "m1", title: "M1", pages: [{ id: "p1", title: "P1", src: "pages/media-bad.html" }] },
+        { id: "m1", title: "M1", pages: [{ id: "p1", title: "Media Page", src: "pages/media-bad.html" }] },
       ],
     });
     expect(codes(c)).toContain("media-no-alt");
+    expect(allHaveMessageHuman(c)).toBe(true);
+    const finding = validateCourse(load(c)).find((f) => f.code === "media-no-alt")!;
+    expect(finding.message_human).toContain("Media Page"); // page title, not id
   });
 
   it("flags required-interactions completion with no required interaction", () => {
@@ -122,6 +131,36 @@ describe("validateCourse cross-checks", () => {
       ],
     });
     expect(codes(c)).toContain("no-required-interaction");
+    expect(allHaveMessageHuman(c)).toBe(true);
+  });
+
+  it("flags a missing score source interaction", () => {
+    const c = base({
+      tracking: { score: { rule: "single-interaction", source: "nonexistent-id" } },
+      structure: [
+        {
+          id: "m1",
+          title: "M1",
+          pages: [{ id: "p1", title: "P1", src: "pages/good.html" }],
+        },
+      ],
+    });
+    expect(codes(c)).toContain("score-source");
+    expect(allHaveMessageHuman(c)).toBe(true);
+    const finding = validateCourse(load(c)).find((f) => f.code === "score-source")!;
+    expect(finding.message_human).toContain("nonexistent-id");
+  });
+
+  it("every finding has a non-empty message_human (page-missing rule)", () => {
+    const c = base({
+      structure: [
+        { id: "m1", title: "M1", pages: [{ id: "p1", title: "Gone Page", src: "pages/does-not-exist.html" }] },
+      ],
+    });
+    expect(codes(c)).toContain("page-missing");
+    const finding = validateCourse(load(c)).find((f) => f.code === "page-missing")!;
+    expect(finding.message_human).toContain("Gone Page"); // title, not id
+    expect(finding.message_human).toContain("pages/does-not-exist.html");
   });
 });
 

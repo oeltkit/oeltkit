@@ -1,6 +1,6 @@
 // Load and validate a course. Validation = JSON Schema + the cross-checks the
 // schema can't express (manifest-v0.md §7, tracking-semantics §10, component
-// validator obligations). Findings are machine-readable.
+// validator obligations). Findings are machine-readable (validator-output.md).
 
 import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
@@ -41,10 +41,15 @@ export interface CourseManifest {
   structure: Module[];
 }
 
+/** A single validator finding (validator-output.md). */
 export interface Finding {
   level: "error" | "warning";
   code: string;
+  /** Terse technical description; used in terminal output. */
   message: string;
+  /** Plain-language, action-oriented sentence naming pages by title. */
+  message_human: string;
+  /** Optional narrowing scope (page id, module id, or file path). */
   where?: string;
 }
 
@@ -67,11 +72,16 @@ function schemaValidate(course: unknown): Finding[] {
     validator = ajv.compile(JSON.parse(readFileSync(schemaPath(), "utf8")));
   }
   if (validator(course)) return [];
-  return (validator.errors ?? []).map((e) => ({
-    level: "error" as const,
-    code: "schema",
-    message: `${e.instancePath || "/"} ${e.message ?? "invalid"}`,
-  }));
+  return (validator.errors ?? []).map((e) => {
+    const where = e.instancePath || "/";
+    const detail = `${where} ${e.message ?? "invalid"}`;
+    return {
+      level: "error" as const,
+      code: "schema",
+      message: detail,
+      message_human: `The manifest has a structural error: ${detail}.`,
+    };
+  });
 }
 
 const ID_RE = (id: string) =>
@@ -82,8 +92,13 @@ export function validateCourse({ dir, course }: LoadedCourse): Finding[] {
   // If the manifest isn't even schema-valid, structural walks below may throw.
   if (findings.length) return findings;
 
+  // Build flat page + interaction lists once.
   const pages = course.structure.flatMap((m) => m.pages);
   const interactions = pages.flatMap((p) => (p.interactions ?? []).map((i) => ({ ...i, page: p })));
+
+  // Build a module-title lookup so page findings can include module context.
+  const moduleTitleByPageId = new Map<string, string>();
+  for (const m of course.structure) for (const p of m.pages) moduleTitleByPageId.set(p.id, m.title);
 
   // Course-wide id uniqueness (manifest-v0 §3.1).
   const ids = [
@@ -94,7 +109,12 @@ export function validateCourse({ dir, course }: LoadedCourse): Finding[] {
   const seen = new Set<string>();
   for (const id of ids) {
     if (seen.has(id))
-      findings.push({ level: "error", code: "id-unique", message: `duplicate id "${id}"` });
+      findings.push({
+        level: "error",
+        code: "id-unique",
+        message: `duplicate id "${id}"`,
+        message_human: `The id "${id}" is used more than once — every id in the course must be unique; rename one of the duplicates.`,
+      });
     seen.add(id);
   }
 
@@ -106,11 +126,13 @@ export function validateCourse({ dir, course }: LoadedCourse): Finding[] {
         level: "error",
         code: "page-missing",
         message: `page src not found: ${page.src}`,
+        message_human: `Page "${page.title}" references a file that doesn't exist (${page.src}) — create the file or fix the path in course.json.`,
         where: page.id,
       });
       continue;
     }
     const html = readFileSync(file, "utf8");
+
     // Declared interactions must exist in the page HTML (decl ↔ HTML, §4.1).
     for (const i of page.interactions ?? []) {
       if (!ID_RE(i.id).test(html)) {
@@ -118,10 +140,12 @@ export function validateCourse({ dir, course }: LoadedCourse): Finding[] {
           level: "error",
           code: "interaction-missing",
           message: `declared interaction "${i.id}" has no element with that id in ${page.src}`,
+          message_human: `Page "${page.title}" declares an interaction "${i.id}" but no element with that id was found in ${page.src} — add id="${i.id}" to the element.`,
           where: page.id,
         });
       }
     }
+
     // Media a11y gate (media.md §3): every <oelt-media> needs captions or a transcript.
     for (const block of html.match(/<oelt-media\b[\s\S]*?<\/oelt-media>/gi) ?? []) {
       if (
@@ -132,6 +156,7 @@ export function validateCourse({ dir, course }: LoadedCourse): Finding[] {
           level: "error",
           code: "media-no-alt",
           message: `<oelt-media> without captions or a transcript in ${page.src}`,
+          message_human: `Page "${page.title}" has a media element without captions or a transcript — add a <track kind="captions"> or a <div slot="transcript"> element inside <oelt-media>.`,
           where: page.id,
         });
       }
@@ -146,6 +171,7 @@ export function validateCourse({ dir, course }: LoadedCourse): Finding[] {
       level: "error",
       code: "no-required-interaction",
       message: `completion rule "${completionRule}" but no interaction is marked required`,
+      message_human: `The completion rule "${completionRule}" requires at least one interaction marked required: true, but none are declared — set "required": true on at least one interaction in course.json.`,
     });
   }
   if (t?.score?.rule === "single-interaction") {
@@ -155,6 +181,7 @@ export function validateCourse({ dir, course }: LoadedCourse): Finding[] {
         level: "error",
         code: "score-source",
         message: `score source "${src ?? "(unset)"}" is not a declared interaction`,
+        message_human: `The score rule "single-interaction" names "${src ?? "(unset)"}" as its source, but no interaction with that id is declared — add an interaction with "id": "${src ?? "..."}" or change the score source in course.json.`,
       });
     }
   }
