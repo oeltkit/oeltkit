@@ -11,6 +11,9 @@ playwright-report/
 # Harness runtime state (SCORM/web resume files)
 harness/.state/
 
+# SCORM Cloud conformance failure artifacts (uploaded by CI, never committed)
+scorm-cloud-artifacts/
+
 # OS / editor
 .DS_Store
 *.log

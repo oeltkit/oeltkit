@@ -78,29 +78,6 @@ jobs:
         if: github.event_name == 'pull_request'
         run: npx commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
 
-  # ──────────────────────────────────────────────────────────────────────────
-  # SCORM Cloud conformance (stubbed — enable once the packager lands).
-  # Posts built SCORM/cmi5 packages to SCORM Cloud's test harness for real-LMS
-  # verification. Secrets (SCORM_CLOUD_APP_ID / SCORM_CLOUD_SECRET_KEY) live in
-  # CI only — never replicate SCORM Cloud locally (see CLAUDE.md).
-  #
-  # scorm-cloud:
-  #   name: SCORM Cloud conformance
-  #   runs-on: ubuntu-latest
-  #   needs: verify
-  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: actions/setup-node@v4
-  #       with:
-  #         node-version: 22
-  #         cache: npm
-  #     - run: npm ci
-  #     - run: npm run build
-  #     - name: Package examples for SCORM Cloud
-  #       run: npx oelt package examples/minimal --target scorm2004
-  #     - name: Upload to SCORM Cloud and run conformance checks
-  #       env:
-  #         SCORM_CLOUD_APP_ID: ${{ secrets.SCORM_CLOUD_APP_ID }}
-  #         SCORM_CLOUD_SECRET_KEY: ${{ secrets.SCORM_CLOUD_SECRET_KEY }}
-  #       run: node scripts/scorm-cloud-conformance.mjs
+  # SCORM Cloud real-LMS conformance lives in its own path-filtered + weekly
+  # workflow (.github/workflows/scorm-cloud.yml) — it consumes registration
+  # quota, so it must not run on every push (Task 10).
