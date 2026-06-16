@@ -86,10 +86,13 @@ export async function runConformance(
   // ── 3. get_course returns valid manifest ──────────────────────────────────
   const got = await client.callTool("get_course", { name: courseName });
   r(check("get_course succeeds", !got.isError));
-  let manifest: { course?: { structure?: { id: string; pages: unknown[] }[]; title?: string } } = {};
+  let manifest: { course?: { structure?: { id: string; pages: unknown[] }[]; title?: string } } =
+    {};
   try {
     manifest = JSON.parse(text(got));
-  } catch { /* leave empty */ }
+  } catch {
+    /* leave empty */
+  }
   r(
     check(
       "get_course returns a manifest with structure",
@@ -104,7 +107,9 @@ export async function runConformance(
   let compList: { components?: { element: string }[] } = {};
   try {
     compList = JSON.parse(text(comps));
-  } catch { /* leave empty */ }
+  } catch {
+    /* leave empty */
+  }
   const hasMcq = compList.components?.some((c) => c.element === "oelt-mcq") ?? false;
   r(check("list_components includes oelt-mcq", hasMcq));
 
@@ -157,12 +162,17 @@ export async function runConformance(
   // ── 7. validate detects an injected error + message_human present ─────────
   // Break the course: point a page at a missing interaction declaration.
   const broken = JSON.parse(text(await client.callTool("get_course", { name: courseName }))) as {
-    course: { structure: { pages: { id: string; interactions?: { id: string; type: string }[] }[] }[] };
+    course: {
+      structure: { pages: { id: string; interactions?: { id: string; type: string }[] }[] }[];
+    };
   };
   broken.course.structure[0]!.pages.find((p) => p.id === "quiz")!.interactions = [
     { id: "does-not-exist", type: "choice" },
   ];
-  await client.callTool("update_structure", { name: courseName, structure: broken.course.structure });
+  await client.callTool("update_structure", {
+    name: courseName,
+    structure: broken.course.structure,
+  });
   const validBad = await client.callTool("validate", { name: courseName });
   r(
     check(
@@ -182,7 +192,10 @@ export async function runConformance(
   broken.course.structure[0]!.pages.find((p) => p.id === "quiz")!.interactions = [
     { id: "q1", type: "choice" },
   ];
-  await client.callTool("update_structure", { name: courseName, structure: broken.course.structure });
+  await client.callTool("update_structure", {
+    name: courseName,
+    structure: broken.course.structure,
+  });
   const validFixed = await client.callTool("validate", { name: courseName });
   r(check("validate passes after fix", !/✗/.test(text(validFixed)), text(validFixed)));
 
@@ -217,7 +230,13 @@ export async function runConformance(
   // ── 13. preview (optional — spawns a server; skip in CI by default) ───────
   if (opts.runPreview) {
     const prev = await client.callTool("preview", { name: courseName });
-    r(check("preview returns a URL", !prev.isError && /http:\/\/localhost:\d+/.test(text(prev)), text(prev)));
+    r(
+      check(
+        "preview returns a URL",
+        !prev.isError && /http:\/\/localhost:\d+/.test(text(prev)),
+        text(prev),
+      ),
+    );
   }
 
   return results;

@@ -144,7 +144,11 @@ export async function replayTranscript(
       out.push(
         res.isError
           ? { step: s.step, pass: true }
-          : { step: s.step, pass: false, detail: `expected an error but got: ${txt.slice(0, 120)}` },
+          : {
+              step: s.step,
+              pass: false,
+              detail: `expected an error but got: ${txt.slice(0, 120)}`,
+            },
       );
       continue;
     }
@@ -153,7 +157,11 @@ export async function replayTranscript(
       continue;
     }
     if (s.expectContains && !txt.includes(s.expectContains)) {
-      out.push({ step: s.step, pass: false, detail: `expected "${s.expectContains}" in: ${txt.slice(0, 120)}` });
+      out.push({
+        step: s.step,
+        pass: false,
+        detail: `expected "${s.expectContains}" in: ${txt.slice(0, 120)}`,
+      });
       continue;
     }
     out.push({ step: s.step, pass: true });

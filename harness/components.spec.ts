@@ -94,7 +94,9 @@ test.describe("oelt-likert", () => {
     await expect(events(page)).toContainText('"result":"completed"');
     await expect(events(page)).toContainText('"response":"4"');
     // No score on a survey item.
-    await expect(events(page).filter({ hasText: '"id":"lk-explicit"' })).not.toContainText('"score"');
+    await expect(events(page).filter({ hasText: '"id":"lk-explicit"' })).not.toContainText(
+      '"score"',
+    );
   });
 });
 
@@ -360,8 +362,14 @@ test.describe("oelt-hotspot", () => {
     const hs = page.locator("#hs-single");
     await hs.getByRole("button", { name: "Nucleus" }).click();
     await hs.getByRole("button", { name: "Mitochondria" }).click();
-    await expect(hs.getByRole("button", { name: "Nucleus" })).toHaveAttribute("aria-pressed", "false");
-    await expect(hs.getByRole("button", { name: "Mitochondria" })).toHaveAttribute("aria-pressed", "true");
+    await expect(hs.getByRole("button", { name: "Nucleus" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    await expect(hs.getByRole("button", { name: "Mitochondria" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 
   test("multiple mode: partial selection fails, exact set passes", async ({ page }) => {
@@ -432,7 +440,10 @@ test.describe("presentation: tabs / accordion / flip-cards", () => {
     await expect(overview).toHaveAttribute("tabindex", "-1");
     // End → last tab; ArrowRight wraps from last back to first.
     await page.keyboard.press("End");
-    await expect(tabs.getByRole("tab", { name: "Examples" })).toHaveAttribute("aria-selected", "true");
+    await expect(tabs.getByRole("tab", { name: "Examples" })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
     await page.keyboard.press("ArrowRight");
     await expect(overview).toHaveAttribute("aria-selected", "true");
   });
@@ -448,7 +459,9 @@ test.describe("presentation: tabs / accordion / flip-cards", () => {
     await expect(panels.nth(0)).not.toHaveAttribute("open", "");
   });
 
-  test("flip-cards: activating a card flips it (aria-pressed + back revealed)", async ({ page }) => {
+  test("flip-cards: activating a card flips it (aria-pressed + back revealed)", async ({
+    page,
+  }) => {
     await page.goto(`${DEMOS}/presentation.html`);
     const card = page.locator("#cards [part~='card']").first();
     await expect(card).toHaveAttribute("aria-pressed", "false");

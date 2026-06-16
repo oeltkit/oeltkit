@@ -60,7 +60,12 @@ export class OeltReflection extends OeltElement {
       this.saveState({ text: input.value, submitted: true } satisfies ReflectionState);
 
       // 1. Record the reflection as a completed (ungraded) interaction.
-      this.emitInteraction({ id: this.id, type: "fill-in", result: "completed", response: input.value });
+      this.emitInteraction({
+        id: this.id,
+        type: "fill-in",
+        result: "completed",
+        response: input.value,
+      });
       feedback.textContent = "Response saved.";
       feedback.focus();
 
@@ -72,7 +77,9 @@ export class OeltReflection extends OeltElement {
           feedback.textContent = message;
         },
       };
-      this.dispatchEvent(new CustomEvent("oelt-reflection", { bubbles: true, composed: true, detail }));
+      this.dispatchEvent(
+        new CustomEvent("oelt-reflection", { bubbles: true, composed: true, detail }),
+      );
     });
 
     // Resume: restore text + saved feedback without re-emitting.

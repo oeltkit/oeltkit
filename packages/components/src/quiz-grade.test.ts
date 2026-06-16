@@ -4,10 +4,20 @@ import { aggregateScore, quizGrade, selectPool, itemScore } from "./quiz-grade.j
 describe("aggregateScore", () => {
   it("is a weighted mean", () => {
     // q1 weight 1 score 1, q2 weight 2 score 0 → (1·1 + 2·0)/3 = 0.333…
-    expect(aggregateScore([{ weight: 1, score: 1 }, { weight: 2, score: 0 }])).toBeCloseTo(1 / 3);
+    expect(
+      aggregateScore([
+        { weight: 1, score: 1 },
+        { weight: 2, score: 0 },
+      ]),
+    ).toBeCloseTo(1 / 3);
   });
   it("equals the simple mean when weights are equal", () => {
-    expect(aggregateScore([{ weight: 1, score: 1 }, { weight: 1, score: 0 }])).toBe(0.5);
+    expect(
+      aggregateScore([
+        { weight: 1, score: 1 },
+        { weight: 1, score: 0 },
+      ]),
+    ).toBe(0.5);
   });
   it("returns 0 when total weight is 0", () => {
     expect(aggregateScore([{ weight: 0, score: 1 }])).toBe(0);
@@ -21,7 +31,10 @@ describe("aggregateScore", () => {
 
 describe("quizGrade", () => {
   const perfect = [{ weight: 1, score: 1 }];
-  const half = [{ weight: 1, score: 1 }, { weight: 1, score: 0 }];
+  const half = [
+    { weight: 1, score: 1 },
+    { weight: 1, score: 0 },
+  ];
 
   it("completed (no result pass/fail) when mastery is absent", () => {
     expect(quizGrade(half)).toEqual({ result: "completed", score: 0.5 });

@@ -16,11 +16,11 @@ Native HTML5 drag-and-drop is **not keyboard operable** and has weak screen-read
 
 Each component manipulates **movable items** among **positions**:
 
-| Component          | Items            | Positions                        |
-| ------------------ | ---------------- | -------------------------------- |
-| `<oelt-ordering>`  | list entries     | slots in one ordered list        |
-| `<oelt-matching>`  | draggable values | one target per prompt            |
-| `<oelt-categorize>`| draggable values | N category buckets               |
+| Component           | Items            | Positions                 |
+| ------------------- | ---------------- | ------------------------- |
+| `<oelt-ordering>`   | list entries     | slots in one ordered list |
+| `<oelt-matching>`   | draggable values | one target per prompt     |
+| `<oelt-categorize>` | draggable values | N category buckets        |
 
 Items are real focusable **`<button>`** elements (native semantics: in the tab order, operable by Space/Enter, focus-visible for free). Components MUST NOT invent ARIA roles for items; they MUST NOT use the **deprecated** `aria-grabbed` / `aria-dropeffect` (removed in ARIA 1.1). Grabbed state is conveyed by a live-region announcement plus a visual `::part(... grabbed)` state, not by deprecated attributes.
 
@@ -28,14 +28,14 @@ Items are real focusable **`<button>`** elements (native semantics: in the tab o
 
 Every pointer operation has this keyboard equivalent. Focus is on an item `<button>`.
 
-| Key                         | When           | Action                                                                          |
-| --------------------------- | -------------- | ------------------------------------------------------------------------------- |
-| `Tab` / `Shift+Tab`         | always         | Move focus between items / controls (native).                                   |
-| `Space` / `Enter`           | not grabbed    | **Pick up** the focused item (enter grabbed state).                             |
-| `Space` / `Enter`           | grabbed        | **Drop** the item at its current position/target (commit, exit grabbed state).  |
-| `ArrowUp`/`Down` (ordering) | grabbed        | **Move** the grabbed item one step earlier/later in the list.                   |
-| `ArrowLeft`/`Right` (match/cat) | grabbed    | **Move** the grabbed item to the previous/next target/bucket.                   |
-| `Escape`                    | grabbed        | **Cancel** — return the item to its pre-pickup position; exit grabbed state.    |
+| Key                             | When        | Action                                                                         |
+| ------------------------------- | ----------- | ------------------------------------------------------------------------------ |
+| `Tab` / `Shift+Tab`             | always      | Move focus between items / controls (native).                                  |
+| `Space` / `Enter`               | not grabbed | **Pick up** the focused item (enter grabbed state).                            |
+| `Space` / `Enter`               | grabbed     | **Drop** the item at its current position/target (commit, exit grabbed state). |
+| `ArrowUp`/`Down` (ordering)     | grabbed     | **Move** the grabbed item one step earlier/later in the list.                  |
+| `ArrowLeft`/`Right` (match/cat) | grabbed     | **Move** the grabbed item to the previous/next target/bucket.                  |
+| `Escape`                        | grabbed     | **Cancel** — return the item to its pre-pickup position; exit grabbed state.   |
 
 Rules:
 

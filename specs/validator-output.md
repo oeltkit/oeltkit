@@ -10,13 +10,13 @@
 
 Every validator finding is a JSON-serialisable object with these fields:
 
-| Field | Type | Required | Notes |
-|---|---|---|---|
-| `level` | `"error" \| "warning"` | yes | `error` blocks packaging; `warning` does not. |
-| `code` | string | yes | Machine-stable key (kebab-case). Never changes once assigned; used by LLM clients to match and fix a specific class of problem. |
-| `message` | string | yes | Terse technical description: what failed and the id or path involved. Used in human-readable terminal output. |
-| `message_human` | string | yes | Plain-language, action-oriented sentence naming the page by title (not id). Tells the author exactly what to fix and how. See §2. |
-| `where` | string | no | An id or path narrowing the scope (page id, module id, file path). Optional; callers must not assume it is present. |
+| Field           | Type                   | Required | Notes                                                                                                                             |
+| --------------- | ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `level`         | `"error" \| "warning"` | yes      | `error` blocks packaging; `warning` does not.                                                                                     |
+| `code`          | string                 | yes      | Machine-stable key (kebab-case). Never changes once assigned; used by LLM clients to match and fix a specific class of problem.   |
+| `message`       | string                 | yes      | Terse technical description: what failed and the id or path involved. Used in human-readable terminal output.                     |
+| `message_human` | string                 | yes      | Plain-language, action-oriented sentence naming the page by title (not id). Tells the author exactly what to fix and how. See §2. |
+| `where`         | string                 | no       | An id or path narrowing the scope (page id, module id, file path). Optional; callers must not assume it is present.               |
 
 Findings array contract: `oelt validate --json` emits:
 
@@ -47,15 +47,15 @@ Findings array contract: `oelt validate --json` emits:
 
 ## 3. Rule code registry
 
-| Code | Level | Trigger | Example `message_human` |
-|---|---|---|---|
-| `schema` | error | JSON Schema violation | "The manifest has a structural error: `{instancePath}` {message}." |
-| `id-unique` | error | Duplicate id across course | "The id \"m1\" is used more than once — every id in the course must be unique; rename one of the duplicates." |
-| `page-missing` | error | `src` file not found | "Page \"Welcome\" references a file that doesn't exist (`pages/p1.html`) — create the file or fix the path in course.json." |
-| `interaction-missing` | error | Declared interaction absent from page HTML | "Page \"Final quiz\" declares an interaction \"q1\" but no element with that id was found in pages/quiz.html — add `id=\"q1\"` to the element." |
-| `media-no-alt` | error | `<oelt-media>` without captions or transcript | "Page \"Introduction video\" has a media element without captions or a transcript — add a `<track kind=\"captions\">` or a `<div slot=\"transcript\">` element." |
-| `no-required-interaction` | error | Completion rule needs `required` interaction but none declared | "The completion rule `{rule}` requires at least one interaction marked `required: true`, but none are declared — set `\"required\": true` on at least one interaction." |
-| `score-source` | error | `single-interaction` score names missing interaction | "The score rule `single-interaction` names \"{source}\" as its source, but no interaction with that id is declared — add an interaction with `\"id\": \"{source}\"` or change the score source." |
+| Code                      | Level | Trigger                                                        | Example `message_human`                                                                                                                                                                          |
+| ------------------------- | ----- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `schema`                  | error | JSON Schema violation                                          | "The manifest has a structural error: `{instancePath}` {message}."                                                                                                                               |
+| `id-unique`               | error | Duplicate id across course                                     | "The id \"m1\" is used more than once — every id in the course must be unique; rename one of the duplicates."                                                                                    |
+| `page-missing`            | error | `src` file not found                                           | "Page \"Welcome\" references a file that doesn't exist (`pages/p1.html`) — create the file or fix the path in course.json."                                                                      |
+| `interaction-missing`     | error | Declared interaction absent from page HTML                     | "Page \"Final quiz\" declares an interaction \"q1\" but no element with that id was found in pages/quiz.html — add `id=\"q1\"` to the element."                                                  |
+| `media-no-alt`            | error | `<oelt-media>` without captions or transcript                  | "Page \"Introduction video\" has a media element without captions or a transcript — add a `<track kind=\"captions\">` or a `<div slot=\"transcript\">` element."                                 |
+| `no-required-interaction` | error | Completion rule needs `required` interaction but none declared | "The completion rule `{rule}` requires at least one interaction marked `required: true`, but none are declared — set `\"required\": true` on at least one interaction."                          |
+| `score-source`            | error | `single-interaction` score names missing interaction           | "The score rule `single-interaction` names \"{source}\" as its source, but no interaction with that id is declared — add an interaction with `\"id\": \"{source}\"` or change the score source." |
 
 ## 4. Stability guarantee
 

@@ -34,14 +34,14 @@ In generated mode the points are numbered `1…N`; the first and last radio labe
 
 ## 3. Attributes
 
-| Attribute      | Values      | Default    | Meaning                                                                  |
-| -------------- | ----------- | ---------- | ------------------------------------------------------------------------ |
-| `id`           | identifier  | —          | Required. Interaction id; matches the manifest declaration & `detail.id`. |
+| Attribute      | Values      | Default    | Meaning                                                                     |
+| -------------- | ----------- | ---------- | --------------------------------------------------------------------------- |
+| `id`           | identifier  | —          | Required. Interaction id; matches the manifest declaration & `detail.id`.   |
 | `scale`        | integer ≥ 2 | `5`        | (generated mode) Number of scale points. Ignored if `<oelt-option>`s given. |
-| `low-label`    | string      | absent     | (generated mode) Anchor for point 1.                                     |
-| `high-label`   | string      | absent     | (generated mode) Anchor for point N.                                     |
-| `submit-label` | string      | `"Submit"` | Label of the submit button.                                              |
-| `retry`        | boolean     | absent     | Allow changing the response after submit (re-emits).                     |
+| `low-label`    | string      | absent     | (generated mode) Anchor for point 1.                                        |
+| `high-label`   | string      | absent     | (generated mode) Anchor for point N.                                        |
+| `submit-label` | string      | `"Submit"` | Label of the submit button.                                                 |
+| `retry`        | boolean     | absent     | Allow changing the response after submit (re-emits).                        |
 
 ## 4. Slots & parts
 

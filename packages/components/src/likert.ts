@@ -75,7 +75,12 @@ export class OeltLikert extends OeltElement {
       }
       this.saveState({ sel: chosen.value, submitted: true } satisfies LikertState);
       // Survey: always "completed", no score (likert.md §5).
-      this.emitInteraction({ id: this.id, type: "likert", result: "completed", response: chosen.value });
+      this.emitInteraction({
+        id: this.id,
+        type: "likert",
+        result: "completed",
+        response: chosen.value,
+      });
       feedback.textContent = "Response recorded.";
       if (!this.hasAttribute("retry")) lock();
     });

@@ -17,7 +17,10 @@ export function normalizeText(s: string, caseSensitive: boolean): string {
 
 /** Split a pipe-separated `answer` attribute into individual accepted answers. */
 export function parseAnswers(answer: string): string[] {
-  return answer.split("|").map((a) => a.trim()).filter((a) => a.length > 0);
+  return answer
+    .split("|")
+    .map((a) => a.trim())
+    .filter((a) => a.length > 0);
 }
 
 /**

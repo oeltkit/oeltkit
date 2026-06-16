@@ -32,12 +32,12 @@ Questions are the quiz's descendant elements whose tag is a **known question typ
 
 ## 3. Attributes
 
-| Attribute      | Values        | Default | Meaning                                                                                                |
-| -------------- | ------------- | ------- | ------------------------------------------------------------------------------------------------------ |
-| `id`           | identifier    | —       | Required. Interaction id; matches the manifest declaration and `detail.id`.                            |
-| `mastery`      | number 0–1    | absent  | Pass threshold. Set ⇒ result is `passed`/`failed` by score ≥ mastery; absent ⇒ `completed`.            |
-| `pool`         | integer ≥ 1   | absent  | Show a random N of the available questions (a question bank). Absent ⇒ all questions are shown.        |
-| `shuffle`      | boolean       | absent  | Randomize the order of the (pooled) questions on upgrade.                                               |
+| Attribute | Values      | Default | Meaning                                                                                         |
+| --------- | ----------- | ------- | ----------------------------------------------------------------------------------------------- |
+| `id`      | identifier  | —       | Required. Interaction id; matches the manifest declaration and `detail.id`.                     |
+| `mastery` | number 0–1  | absent  | Pass threshold. Set ⇒ result is `passed`/`failed` by score ≥ mastery; absent ⇒ `completed`.     |
+| `pool`    | integer ≥ 1 | absent  | Show a random N of the available questions (a question bank). Absent ⇒ all questions are shown. |
+| `shuffle` | boolean     | absent  | Randomize the order of the (pooled) questions on upgrade.                                       |
 
 When `pool` ≥ the question count, all questions are shown (no pooling). `weight` is read from each question child (§2).
 

@@ -2,22 +2,22 @@
 
 The OELT MCP server — wraps `@oeltkit/cli` and filesystem operations as tools so an LLM client (Claude Desktop, Claude Code, Cowork, …) can author standards-compliant e-learning courses conversationally. **stdio transport**, no framework, errors come back as actionable text rather than stack traces.
 
-The authoring tool for this audience *is the LLM client* (PLAN.md §4.6). This package is the tool surface; the knowledge surface is `docs/llms.txt` + the published skill.
+The authoring tool for this audience _is the LLM client_ (PLAN.md §4.6). This package is the tool surface; the knowledge surface is `docs/llms.txt` + the published skill.
 
 ## Tools
 
-| Tool | Purpose |
-|---|---|
-| `scaffold_course` | Create a new course (tree + manifest) in the managed directory |
-| `get_course` | Read the full `course.json` manifest |
-| `update_structure` | Replace the modules/pages structure |
-| `add_page` / `update_page` | Page content CRUD |
-| `list_components` / `get_component_doc` | Component discovery + full specs (so the model never guesses an API) |
-| `validate` | Schema + a11y + tracking checks; returns machine codes **and** `message_human` action sentences |
-| `preview` | Launch the fake-LMS harness, return a URL |
-| `package_course` | Build a SCORM/cmi5/web artifact (validates first) |
-| `export_course` / `import_course` | `.oeltcourse` single-file round-trip |
-| `set_theme` | Write `--oelt-*` design tokens |
+| Tool                                    | Purpose                                                                                         |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `scaffold_course`                       | Create a new course (tree + manifest) in the managed directory                                  |
+| `get_course`                            | Read the full `course.json` manifest                                                            |
+| `update_structure`                      | Replace the modules/pages structure                                                             |
+| `add_page` / `update_page`              | Page content CRUD                                                                               |
+| `list_components` / `get_component_doc` | Component discovery + full specs (so the model never guesses an API)                            |
+| `validate`                              | Schema + a11y + tracking checks; returns machine codes **and** `message_human` action sentences |
+| `preview`                               | Launch the fake-LMS harness, return a URL                                                       |
+| `package_course`                        | Build a SCORM/cmi5/web artifact (validates first)                                               |
+| `export_course` / `import_course`       | `.oeltcourse` single-file round-trip                                                            |
+| `set_theme`                             | Write `--oelt-*` design tokens                                                                  |
 
 ## Managed courses directory
 

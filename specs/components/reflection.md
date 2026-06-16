@@ -19,12 +19,12 @@ An open-ended written response — "what will you apply from this lesson?". Not 
 
 ## 3. Attributes
 
-| Attribute      | Values      | Default   | Meaning                                                                       |
-| -------------- | ----------- | --------- | ----------------------------------------------------------------------------- |
-| `id`           | identifier  | —         | Required. Interaction id; matches the manifest declaration & `detail.id`.      |
-| `maxlength`    | integer ≥ 1 | `500`     | Max characters. Bounds the persisted state (§7). Larger values must respect the suspend budget. |
-| `rows`         | integer     | `4`       | Initial visible rows of the textarea.                                         |
-| `submit-label` | string      | `"Save"`  | Label of the Save button.                                                     |
+| Attribute      | Values      | Default  | Meaning                                                                                         |
+| -------------- | ----------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `id`           | identifier  | —        | Required. Interaction id; matches the manifest declaration & `detail.id`.                       |
+| `maxlength`    | integer ≥ 1 | `500`    | Max characters. Bounds the persisted state (§7). Larger values must respect the suspend budget. |
+| `rows`         | integer     | `4`      | Initial visible rows of the textarea.                                                           |
+| `submit-label` | string      | `"Save"` | Label of the Save button.                                                                       |
 
 There is no `correct`/grading — reflections are never auto-scored in v0.
 

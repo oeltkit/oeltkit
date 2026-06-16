@@ -106,6 +106,8 @@ export function httpClient(baseUrl: string): MCPClient {
     async callTool(name, args = {}) {
       return (await rpc("tools/call", { name, arguments: args })) as CallResult;
     },
-    async close() { /* HTTP is stateless */ },
+    async close() {
+      /* HTTP is stateless */
+    },
   };
 }

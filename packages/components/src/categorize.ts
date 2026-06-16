@@ -232,7 +232,9 @@ export class OeltCategorize extends OeltElement {
   #announceDrop(value: string, pos: number): void {
     const label = this.#labels.get(value) ?? value;
     this.#announcer.announce(
-      pos < this.#n ? `Dropped ${label} in ${this.#buckets[pos]!.label}.` : `Dropped ${label} in bank.`,
+      pos < this.#n
+        ? `Dropped ${label} in ${this.#buckets[pos]!.label}.`
+        : `Dropped ${label} in bank.`,
     );
   }
 

@@ -54,7 +54,9 @@ describe("validateCourse cross-checks", () => {
   const load = (course: CourseManifest): LoadedCourse => ({ dir, course });
   const codes = (c: CourseManifest) => validateCourse(load(c)).map((f) => f.code);
   const allHaveMessageHuman = (c: CourseManifest) =>
-    validateCourse(load(c)).every((f) => typeof f.message_human === "string" && f.message_human.length > 0);
+    validateCourse(load(c)).every(
+      (f) => typeof f.message_human === "string" && f.message_human.length > 0,
+    );
 
   it("passes when a declared interaction exists in the page HTML", () => {
     const c = base({
@@ -103,7 +105,11 @@ describe("validateCourse cross-checks", () => {
   it("flags <oelt-media> without captions or a transcript", () => {
     const c = base({
       structure: [
-        { id: "m1", title: "M1", pages: [{ id: "p1", title: "Media Page", src: "pages/media-bad.html" }] },
+        {
+          id: "m1",
+          title: "M1",
+          pages: [{ id: "p1", title: "Media Page", src: "pages/media-bad.html" }],
+        },
       ],
     });
     expect(codes(c)).toContain("media-no-alt");
@@ -154,7 +160,11 @@ describe("validateCourse cross-checks", () => {
   it("every finding has a non-empty message_human (page-missing rule)", () => {
     const c = base({
       structure: [
-        { id: "m1", title: "M1", pages: [{ id: "p1", title: "Gone Page", src: "pages/does-not-exist.html" }] },
+        {
+          id: "m1",
+          title: "M1",
+          pages: [{ id: "p1", title: "Gone Page", src: "pages/does-not-exist.html" }],
+        },
       ],
     });
     expect(codes(c)).toContain("page-missing");
@@ -180,7 +190,9 @@ describe(".oeltcourse export / import", () => {
         title: "CF Test",
         lang: "en",
         targets: ["web"],
-        structure: [{ id: "m1", title: "M1", pages: [{ id: "p1", title: "P1", src: "pages/p1.html" }] }],
+        structure: [
+          { id: "m1", title: "M1", pages: [{ id: "p1", title: "P1", src: "pages/p1.html" }] },
+        ],
       }),
     );
     writeFileSync(join(srcDir, "pages", "p1.html"), "<section><h1>Hello</h1></section>");
@@ -204,7 +216,14 @@ describe(".oeltcourse export / import", () => {
     const zip = new JSZip();
     zip.file(
       "course.json",
-      JSON.stringify({ oelt: "99.0", id: "x.y", title: "T", lang: "en", targets: ["web"], structure: [] }),
+      JSON.stringify({
+        oelt: "99.0",
+        id: "x.y",
+        title: "T",
+        lang: "en",
+        targets: ["web"],
+        structure: [],
+      }),
     );
     const bytes = await zip.generateAsync({ type: "nodebuffer" });
     const path = join(workDir, "future.oeltcourse");

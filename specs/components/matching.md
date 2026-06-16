@@ -24,11 +24,11 @@ Each `<oelt-pair>` declares a `prompt` (the fixed left side) and the correct `va
 
 ## 3. Attributes
 
-| Attribute      | Values     | Default          | Meaning                                                                  |
-| -------------- | ---------- | ---------------- | ------------------------------------------------------------------------ |
-| `id`           | identifier | —                | Required. Interaction id; matches the manifest declaration & `detail.id`. |
-| `submit-label` | string     | `"Check matches"`| Label of the Check button.                                               |
-| `retry`        | boolean    | absent           | Allow re-checking after feedback.                                        |
+| Attribute      | Values     | Default           | Meaning                                                                   |
+| -------------- | ---------- | ----------------- | ------------------------------------------------------------------------- |
+| `id`           | identifier | —                 | Required. Interaction id; matches the manifest declaration & `detail.id`. |
+| `submit-label` | string     | `"Check matches"` | Label of the Check button.                                                |
+| `retry`        | boolean    | absent            | Allow re-checking after feedback.                                         |
 
 ## 4. Slots & parts
 

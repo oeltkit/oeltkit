@@ -39,7 +39,8 @@ export class OeltQuiz extends OeltElement {
     const all = [...this.querySelectorAll<HTMLElement>("*")].filter(
       (el) => QUESTION_TAGS.has(el.tagName) && el.id,
     );
-    for (const q of all) this.#weights.set(q.id, Math.max(0, Number(q.getAttribute("weight")) || 1));
+    for (const q of all)
+      this.#weights.set(q.id, Math.max(0, Number(q.getAttribute("weight")) || 1));
 
     const saved = this.loadState<QuizState | undefined>(undefined);
 
@@ -109,7 +110,8 @@ export class OeltQuiz extends OeltElement {
     const g = quizGrade(items, this.#mastery);
     this.#status.textContent = `Quiz complete. Score ${Math.round(g.score * 100)}%.`;
     this.#status.part.remove("passed", "failed");
-    if (this.#mastery !== undefined) this.#status.part.add(g.result === "passed" ? "passed" : "failed");
+    if (this.#mastery !== undefined)
+      this.#status.part.add(g.result === "passed" ? "passed" : "failed");
 
     // Emit only when triggered by a live answer (not on resume restore), and
     // re-emit on subsequent answers (retry) so the latest aggregate wins.
@@ -120,7 +122,12 @@ export class OeltQuiz extends OeltElement {
       this.#done = true;
       this.#persist();
       queueMicrotask(() =>
-        this.emitInteraction({ id: this.id, type: "performance", result: g.result, score: g.score }),
+        this.emitInteraction({
+          id: this.id,
+          type: "performance",
+          result: g.result,
+          score: g.score,
+        }),
       );
     }
   }

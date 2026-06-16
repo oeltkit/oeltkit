@@ -25,11 +25,11 @@ Reorder a set of items into the correct sequence (steps in a process, events in 
 
 ## 3. Attributes
 
-| Attribute      | Values     | Default          | Meaning                                                                  |
-| -------------- | ---------- | ---------------- | ------------------------------------------------------------------------ |
-| `id`           | identifier | —                | Required. Interaction id; matches the manifest declaration & `detail.id`. |
-| `submit-label` | string     | `"Check order"`  | Label of the Check button.                                               |
-| `retry`        | boolean    | absent           | Allow re-checking after feedback (re-emits each Check).                  |
+| Attribute      | Values     | Default         | Meaning                                                                   |
+| -------------- | ---------- | --------------- | ------------------------------------------------------------------------- |
+| `id`           | identifier | —               | Required. Interaction id; matches the manifest declaration & `detail.id`. |
+| `submit-label` | string     | `"Check order"` | Label of the Check button.                                                |
+| `retry`        | boolean    | absent          | Allow re-checking after feedback (re-emits each Check).                   |
 
 ## 4. Slots & parts
 

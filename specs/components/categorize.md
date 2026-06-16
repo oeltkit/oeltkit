@@ -27,11 +27,11 @@ Sort each item (token) into its correct category bucket. Unlike `<oelt-matching>
 
 ## 3. Attributes
 
-| Attribute      | Values     | Default            | Meaning                                                                  |
-| -------------- | ---------- | ------------------ | ------------------------------------------------------------------------ |
-| `id`           | identifier | —                  | Required. Interaction id; matches the manifest declaration & `detail.id`. |
-| `submit-label` | string     | `"Check"`          | Label of the Check button.                                               |
-| `retry`        | boolean    | absent             | Allow re-checking after feedback.                                        |
+| Attribute      | Values     | Default   | Meaning                                                                   |
+| -------------- | ---------- | --------- | ------------------------------------------------------------------------- |
+| `id`           | identifier | —         | Required. Interaction id; matches the manifest declaration & `detail.id`. |
+| `submit-label` | string     | `"Check"` | Label of the Check button.                                                |
+| `retry`        | boolean    | absent    | Allow re-checking after feedback.                                         |
 
 ## 4. Slots & parts
 

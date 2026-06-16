@@ -59,7 +59,8 @@ export class OeltMatching extends OeltElement {
     const saved = this.loadState<MatchingState | undefined>(undefined);
     if (saved) {
       for (const [v, p] of Object.entries(saved.placed)) {
-        if (this.#labels.has(v) && this.#pairs.some((pr) => pr.prompt === p)) this.#placed.set(v, p);
+        if (this.#labels.has(v) && this.#pairs.some((pr) => pr.prompt === p))
+          this.#placed.set(v, p);
       }
       this.#submitted = saved.submitted;
     }
@@ -233,7 +234,9 @@ export class OeltMatching extends OeltElement {
   #announceDrop(value: string, pos: number): void {
     const label = this.#labels.get(value) ?? value;
     this.#announcer.announce(
-      pos < this.#n ? `Dropped ${label} on ${this.#pairs[pos]!.prompt}.` : `Dropped ${label} in bank.`,
+      pos < this.#n
+        ? `Dropped ${label} on ${this.#pairs[pos]!.prompt}.`
+        : `Dropped ${label} in bank.`,
     );
   }
 

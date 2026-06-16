@@ -95,7 +95,10 @@ async function resolveDir(input: string): Promise<{ dir: string; cleanup?: () =>
   if (!isOeltCourse(input)) return { dir: input };
   const tmp = mkdtempSync(join(tmpdir(), "oelt-import-"));
   await importCourse(input, tmp);
-  return { dir: tmp, cleanup: () => import("node:fs").then((fs) => fs.rmSync(tmp, { recursive: true, force: true })) };
+  return {
+    dir: tmp,
+    cleanup: () => import("node:fs").then((fs) => fs.rmSync(tmp, { recursive: true, force: true })),
+  };
 }
 
 async function cmdValidate(input: string, flags: Args["flags"]): Promise<number> {
@@ -144,7 +147,9 @@ async function cmdPreview(input: string, flags: Args["flags"]): Promise<void> {
     process.on("exit", () => {
       try {
         import("node:fs").then((fs) => fs.rmSync(tmp, { recursive: true, force: true }));
-      } catch { /* best effort */ }
+      } catch {
+        /* best effort */
+      }
     });
   }
   const server = join(repoRoot(), "harness", "server.mjs");

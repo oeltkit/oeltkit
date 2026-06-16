@@ -225,7 +225,8 @@ Accessible content-organizing widgets. **Presentation only** — they don't trac
   <oelt-tab label="Details"><p>…</p></oelt-tab>
 </oelt-tabs>
 
-<oelt-accordion single>  <!-- `single` = one section open at a time -->
+<oelt-accordion single>
+  <!-- `single` = one section open at a time -->
   <oelt-panel label="What is SCORM?"><p>…</p></oelt-panel>
   <oelt-panel label="What is cmi5?"><p>…</p></oelt-panel>
 </oelt-accordion>

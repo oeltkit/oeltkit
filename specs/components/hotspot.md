@@ -9,7 +9,7 @@ Select the correct region(s) on an image ("click the part that stores genetic ma
 
 **Light DOM.** The image plus **labeled `<button>` overlays** positioned over it. Pixel-hunting image maps (classic `<map>`/`<area>`, or "click anywhere on the X") **cannot be made accessible** — a screen-reader user can't see the image. So:
 
-> **Every hotspot MUST have a text `label` (its accessible name), and the `<img>` MUST have `alt`.** The component is a *labeled-region selection*, not pixel-hunting. A SR user perceives it as a labelled group of toggle buttons and can answer without seeing the image; a sighted user sees the same labels positioned on the diagram.
+> **Every hotspot MUST have a text `label` (its accessible name), and the `<img>` MUST have `alt`.** The component is a _labeled-region selection_, not pixel-hunting. A SR user perceives it as a labelled group of toggle buttons and can answer without seeing the image; a sighted user sees the same labels positioned on the diagram.
 
 This is the careful a11y model the component exists to enforce. Hotspots are toggle `<button>`s with `aria-pressed`; selection state is conveyed by `aria-pressed` + a visible ✓ (never colour alone).
 
@@ -28,14 +28,14 @@ This is the careful a11y model the component exists to enforce. Hotspots are tog
 
 ## 3. Attributes
 
-| Attribute      | Values                 | Default          | Meaning                                                                  |
-| -------------- | ---------------------- | ---------------- | ------------------------------------------------------------------------ |
+| Attribute      | Values                 | Default          | Meaning                                                                   |
+| -------------- | ---------------------- | ---------------- | ------------------------------------------------------------------------- |
 | `id`           | identifier             | —                | Required. Interaction id; matches the manifest declaration & `detail.id`. |
-| `src`          | URL                    | —                | Required. The image.                                                     |
+| `src`          | URL                    | —                | Required. The image.                                                      |
 | `alt`          | string                 | —                | Required (a11y). Alternative text for the image.                          |
-| `mode`         | `single` \| `multiple` | `single`         | One correct region vs a set.                                             |
-| `submit-label` | string                 | `"Check answer"` | Label of the Check button.                                               |
-| `retry`        | boolean                | absent           | Allow re-answering after feedback.                                       |
+| `mode`         | `single` \| `multiple` | `single`         | One correct region vs a set.                                              |
+| `submit-label` | string                 | `"Check answer"` | Label of the Check button.                                                |
+| `retry`        | boolean                | absent           | Allow re-answering after feedback.                                        |
 
 ## 4. Slots & parts
 

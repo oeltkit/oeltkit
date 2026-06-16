@@ -24,18 +24,19 @@ Three small layout/disclosure components for organizing content. Unlike the asse
 
 Upgrades to a `role="tablist"` of `role="tab"` buttons + `role="tabpanel"` regions. **Automatic activation:** the focused tab is the selected tab.
 
-| Key | Action |
-| --- | --- |
-| `Tab` | Move into the tablist (lands on the selected tab), then to the active panel. |
-| `ArrowLeft`/`ArrowRight` | Move to and select the previous/next tab (wraps). |
-| `Home`/`End` | Select the first/last tab. |
+| Key                      | Action                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| `Tab`                    | Move into the tablist (lands on the selected tab), then to the active panel. |
+| `ArrowLeft`/`ArrowRight` | Move to and select the previous/next tab (wraps).                            |
+| `Home`/`End`             | Select the first/last tab.                                                   |
 
 Roving tabindex (only the selected tab is in the tab order). Each tab `aria-selected`, `aria-controls` its panel; each panel `aria-labelledby` its tab and `hidden` unless active. Parts: `::part(tablist)`, `::part(tab)`, `::part(tab selected)`, `::part(panel)`.
 
 ## 3. `<oelt-accordion>` — collapsible sections (native disclosure)
 
 ```html
-<oelt-accordion>            <!-- add `single` for exclusive open -->
+<oelt-accordion>
+  <!-- add `single` for exclusive open -->
   <oelt-panel label="What is SCORM?"><p>…</p></oelt-panel>
   <oelt-panel label="What is cmi5?"><p>…</p></oelt-panel>
 </oelt-accordion>

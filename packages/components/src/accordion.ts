@@ -25,7 +25,9 @@ export class OeltAccordion extends OeltElement {
     if (panels.length === 0) return;
 
     // `single` → shared name makes the browser enforce exclusive open natively.
-    const nameAttr = this.hasAttribute("single") ? ` name="${escapeAttr(this.id || "oelt-acc")}"` : "";
+    const nameAttr = this.hasAttribute("single")
+      ? ` name="${escapeAttr(this.id || "oelt-acc")}"`
+      : "";
 
     this.innerHTML = panels
       .map(

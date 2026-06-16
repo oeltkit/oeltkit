@@ -40,8 +40,7 @@ function walkDir(dir: string, base = dir): string[] {
 /** `oelt export <dir> [--out file.oeltcourse]` */
 export async function exportCourse(courseDir: string, outFile?: string): Promise<string> {
   const dir = resolve(courseDir);
-  if (!existsSync(join(dir, "course.json")))
-    throw new Error(`No course.json in ${courseDir}`);
+  if (!existsSync(join(dir, "course.json"))) throw new Error(`No course.json in ${courseDir}`);
 
   const parentName = dir.split(sep).pop() ?? "course";
   const out = outFile ?? join(dirname(dir), `${parentName}.oeltcourse`);
@@ -70,7 +69,9 @@ export async function importCourse(oeltcoursePath: string, targetDir: string): P
 
   const manifestEntry = zip.file("course.json");
   if (!manifestEntry)
-    throw new Error(`${oeltcoursePath}: missing course.json at archive root — not a valid .oeltcourse`);
+    throw new Error(
+      `${oeltcoursePath}: missing course.json at archive root — not a valid .oeltcourse`,
+    );
 
   const manifest = JSON.parse(await manifestEntry.async("string")) as CourseManifest;
   const majorRequired = parseInt((manifest.oelt ?? "0.0").split(".")[0]!, 10);

@@ -59,11 +59,16 @@ export async function scaffold_course(args: {
   const { name, title, targets = ["scorm12", "scorm2004", "cmi5", "web"], lang = "en" } = args;
   const dir = coursePath(name);
   if (existsSync(join(dir, "course.json"))) {
-    throw new Error(`A course named "${name}" already exists — choose a different name or use get_course to inspect it`);
+    throw new Error(
+      `A course named "${name}" already exists — choose a different name or use get_course to inspect it`,
+    );
   }
   mkdirSync(join(dir, "pages"), { recursive: true });
   const slug = (s: string) =>
-    s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "course";
+    s
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "") || "course";
   const manifest = {
     oelt: "0.1",
     id: `org.oelt.${slug(name)}`,
@@ -83,7 +88,9 @@ export async function scaffold_course(args: {
     join(dir, "pages", "p1.html"),
     `<section>\n  <h1>Welcome</h1>\n  <p>Edit <code>pages/p1.html</code> and update course.json to build your course.</p>\n</section>\n`,
   );
-  return ok(`Created course "${title}" in ${dir}\n\nNext: call validate to check the course, add_page to add more pages, or preview to open the preview harness.`);
+  return ok(
+    `Created course "${title}" in ${dir}\n\nNext: call validate to check the course, add_page to add more pages, or preview to open the preview harness.`,
+  );
 }
 
 export function get_course(args: { name: string }): McpText {
@@ -107,7 +114,9 @@ export function update_structure(args: { name: string; structure: unknown }): Mc
         "\n\nThe course.json has been written — call validate for full details.",
     );
   }
-  return ok(`Structure updated. Course now has ${(updated.structure as unknown[]).length} module(s).`);
+  return ok(
+    `Structure updated. Course now has ${(updated.structure as unknown[]).length} module(s).`,
+  );
 }
 
 export function add_page(args: {
@@ -121,7 +130,8 @@ export function add_page(args: {
   const dir = coursePath(name);
   const loaded = loadCourse(dir);
   const mod = loaded.course.structure.find((m) => m.id === module_id);
-  if (!mod) throw new Error(`Module "${module_id}" not found — call get_course to see the structure`);
+  if (!mod)
+    throw new Error(`Module "${module_id}" not found — call get_course to see the structure`);
 
   // Check id uniqueness.
   const allIds = [
@@ -134,7 +144,8 @@ export function add_page(args: {
 
   const src = `pages/${page_id}.html`;
   const pageContent =
-    html ?? `<section>\n  <h1>${page_title}</h1>\n  <p>Edit ${src} to add your content.</p>\n</section>\n`;
+    html ??
+    `<section>\n  <h1>${page_title}</h1>\n  <p>Edit ${src} to add your content.</p>\n</section>\n`;
   mkdirSync(join(dir, "pages"), { recursive: true });
   writeFileSync(join(dir, src), pageContent);
 
@@ -175,9 +186,7 @@ export function get_component_doc(args: { component: string }): McpText {
     const available = readdirSync(SPECS_COMPONENTS)
       .filter((f) => f.endsWith(".md") && f !== "base.md" && f !== "README.md")
       .map((f) => `oelt-${f.replace(/\.md$/, "")}`);
-    throw new Error(
-      `Component "oelt-${name}" not found. Available: ${available.join(", ")}`,
-    );
+    throw new Error(`Component "oelt-${name}" not found. Available: ${available.join(", ")}`);
   }
   return ok(readFileSync(specFile, "utf8"));
 }
@@ -188,9 +197,7 @@ export function validate(args: { name: string }): McpText {
   const findings = validateCourse(loaded);
   const ok_ = !findings.some((f) => f.level === "error");
   if (findings.length === 0) return ok("✓ Course is valid — no issues found.");
-  const lines = findings.map(
-    (f) => `[${f.level.toUpperCase()}] ${f.code}: ${f.message_human}`,
-  );
+  const lines = findings.map((f) => `[${f.level.toUpperCase()}] ${f.code}: ${f.message_human}`);
   return ok(
     (ok_ ? "⚠ Valid (warnings only):\n" : "✗ Validation failed:\n") +
       lines.join("\n") +
@@ -209,13 +216,18 @@ export async function preview(args: { name: string; port?: number }): Promise<Mc
 
   const port = args.port ?? (await findFreePort());
   const server = join(REPO_ROOT, "harness", "server.mjs");
-  const child = spawn("node", [server, dir, "--port", String(port)], { stdio: "ignore", detached: true });
+  const child = spawn("node", [server, dir, "--port", String(port)], {
+    stdio: "ignore",
+    detached: true,
+  });
   child.unref();
   activePreviews.set(dir, port);
 
   // Wait for the server to be ready (up to 5 s).
   await waitForUrl(`http://localhost:${port}/`, 5000);
-  return ok(`Preview running at http://localhost:${port}/\n\nThe harness simulates all four delivery targets (scorm12, scorm2004, cmi5, web) and shows live tracking events.`);
+  return ok(
+    `Preview running at http://localhost:${port}/\n\nThe harness simulates all four delivery targets (scorm12, scorm2004, cmi5, web) and shows live tracking events.`,
+  );
 }
 
 async function findFreePort(): Promise<number> {
@@ -235,7 +247,9 @@ async function waitForUrl(url: string, timeout: number): Promise<void> {
     try {
       const res = await fetch(url, { signal: AbortSignal.timeout(500) });
       if (res.ok) return;
-    } catch { /* keep waiting */ }
+    } catch {
+      /* keep waiting */
+    }
     await new Promise((r) => setTimeout(r, 200));
   }
   throw new Error(`Preview server didn't become ready within ${timeout / 1000}s`);

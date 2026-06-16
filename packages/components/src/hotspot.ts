@@ -15,7 +15,10 @@ interface HotspotState {
 }
 
 const slug = (s: string): string =>
-  s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "area";
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "area";
 
 export class OeltHotspot extends OeltElement {
   #mode: "single" | "multiple" = "single";

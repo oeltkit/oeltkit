@@ -122,7 +122,11 @@ export function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {
  * (so an ordering task doesn't start already-solved). Falls back to the last
  * shuffle if every attempt matched (e.g. all elements identical).
  */
-export function shuffleDifferent(arr: string[], rng: () => number = Math.random, tries = 5): string[] {
+export function shuffleDifferent(
+  arr: string[],
+  rng: () => number = Math.random,
+  tries = 5,
+): string[] {
   let out = arr;
   for (let t = 0; t < tries; t++) {
     out = shuffle(arr, rng);

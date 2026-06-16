@@ -170,7 +170,9 @@ export class OeltOrdering extends OeltElement {
     const i = Math.max(0, this.#order.indexOf(value));
     this.#renderItems();
     this.#focusItem(i);
-    this.#announcer.announce(`Cancelled. ${this.#labels.get(value) ?? value} returned to ${this.#pos(i)}`);
+    this.#announcer.announce(
+      `Cancelled. ${this.#labels.get(value) ?? value} returned to ${this.#pos(i)}`,
+    );
   }
 
   #check(): void {

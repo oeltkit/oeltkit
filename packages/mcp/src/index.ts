@@ -12,10 +12,7 @@
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import {
-  CallToolRequestSchema,
-  ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 
 import * as T from "./tools.js";
 
@@ -29,7 +26,10 @@ const TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        name: { type: "string", description: "Directory name (letters, numbers, spaces, hyphens, underscores)" },
+        name: {
+          type: "string",
+          description: "Directory name (letters, numbers, spaces, hyphens, underscores)",
+        },
         title: { type: "string", description: "Human-readable course title (shown in the player)" },
         targets: {
           type: "array",
@@ -75,7 +75,10 @@ const TOOLS = [
         module_id: { type: "string", description: "Id of the module to add the page to" },
         page_id: { type: "string", description: "Unique page id (^[A-Za-z][A-Za-z0-9_-]*$)" },
         page_title: { type: "string", description: "Page title" },
-        html: { type: "string", description: "Page HTML body (no <html>/<body> wrapper). Defaults to a heading stub." },
+        html: {
+          type: "string",
+          description: "Page HTML body (no <html>/<body> wrapper). Defaults to a heading stub.",
+        },
       },
       required: ["name", "module_id", "page_id", "page_title"],
     },
@@ -88,7 +91,10 @@ const TOOLS = [
       type: "object" as const,
       properties: {
         name: { type: "string", description: "Course name" },
-        src: { type: "string", description: "Page src path relative to the course root (e.g. pages/p1.html)" },
+        src: {
+          type: "string",
+          description: "Page src path relative to the course root (e.g. pages/p1.html)",
+        },
         html: { type: "string", description: "New page HTML body content" },
       },
       required: ["name", "src", "html"],
@@ -107,7 +113,11 @@ const TOOLS = [
     inputSchema: {
       type: "object" as const,
       properties: {
-        component: { type: "string", description: "Component name: oelt-mcq, oelt-branching, oelt-media, etc. (with or without the oelt- prefix)" },
+        component: {
+          type: "string",
+          description:
+            "Component name: oelt-mcq, oelt-branching, oelt-media, etc. (with or without the oelt- prefix)",
+        },
       },
       required: ["component"],
     },
@@ -148,7 +158,10 @@ const TOOLS = [
           enum: ["scorm12", "scorm2004", "cmi5", "web"],
           description: "Delivery target",
         },
-        out: { type: "string", description: "Output file path. Default: <course-dir>/<id>-<target>.zip" },
+        out: {
+          type: "string",
+          description: "Output file path. Default: <course-dir>/<id>-<target>.zip",
+        },
       },
       required: ["name", "target"],
     },
@@ -161,7 +174,10 @@ const TOOLS = [
       type: "object" as const,
       properties: {
         name: { type: "string", description: "Course name" },
-        out: { type: "string", description: "Output .oeltcourse path. Default: <courses-root>/<name>.oeltcourse" },
+        out: {
+          type: "string",
+          description: "Output .oeltcourse path. Default: <courses-root>/<name>.oeltcourse",
+        },
       },
       required: ["name"],
     },
@@ -189,7 +205,7 @@ const TOOLS = [
         name: { type: "string", description: "Course name" },
         tokens: {
           type: "object",
-          description: "CSS custom property map, e.g. { \"--oelt-color-primary\": \"#e63\" }",
+          description: 'CSS custom property map, e.g. { "--oelt-color-primary": "#e63" }',
           additionalProperties: { type: "string" },
         },
       },
@@ -200,10 +216,7 @@ const TOOLS = [
 
 // ── server ────────────────────────────────────────────────────────────────────
 
-const server = new Server(
-  { name: "oelt-mcp", version: "0.0.0" },
-  { capabilities: { tools: {} } },
-);
+const server = new Server({ name: "oelt-mcp", version: "0.0.0" }, { capabilities: { tools: {} } });
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
 

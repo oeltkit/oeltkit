@@ -64,11 +64,11 @@ the manifest version is sufficient.
 
 ## 4. Size guidance
 
-| Size | Outcome |
-|------|---------|
-| ≤ 50 MB | Normal |
-| > 50 MB | Tool SHOULD emit a warning advising the author to reduce asset sizes |
-| > 200 MB | Tool MUST refuse to create the file with a clear error |
+| Size     | Outcome                                                              |
+| -------- | -------------------------------------------------------------------- |
+| ≤ 50 MB  | Normal                                                               |
+| > 50 MB  | Tool SHOULD emit a warning advising the author to reduce asset sizes |
+| > 200 MB | Tool MUST refuse to create the file with a clear error               |
 
 These limits apply to the compressed archive size. During import, there is no limit on
 uncompressed size but tools SHOULD warn if the extracted tree exceeds 500 MB.

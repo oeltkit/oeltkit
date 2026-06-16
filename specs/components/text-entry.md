@@ -31,17 +31,17 @@ A single-line free-response question. The learner types an answer into a native 
 
 ## 3. Attributes
 
-| Attribute        | Values             | Default          | Meaning                                                                                           |
-| ---------------- | ------------------ | ---------------- | ------------------------------------------------------------------------------------------------- |
-| `id`             | identifier         | —                | Required. Interaction id; matches the manifest declaration and `detail.id`.                       |
-| `mode`           | `text` \| `numeric`| `text`           | Matching mode.                                                                                     |
-| `answer`         | string             | —                | Accepted answer(s). Text: one or more, `\|`-separated. Numeric: the target number. Required unless `manual-grade`. |
-| `tolerance`      | number ≥ 0         | `0`              | (numeric) Absolute tolerance: passed iff `\|input − answer\| ≤ tolerance`.                          |
-| `case-sensitive` | boolean            | absent           | (text) Match case exactly. Default: case-insensitive.                                             |
-| `placeholder`    | string             | absent           | Input placeholder text.                                                                            |
-| `submit-label`   | string             | `"Check answer"` | Label of the submit button.                                                                        |
-| `retry`          | boolean            | absent           | Allow re-answering after feedback (re-emits on each submit).                                       |
-| `manual-grade`   | boolean            | absent           | No `answer`; emits `result:"completed"` (no pass/fail) — capture an open response.                 |
+| Attribute        | Values              | Default          | Meaning                                                                                                            |
+| ---------------- | ------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `id`             | identifier          | —                | Required. Interaction id; matches the manifest declaration and `detail.id`.                                        |
+| `mode`           | `text` \| `numeric` | `text`           | Matching mode.                                                                                                     |
+| `answer`         | string              | —                | Accepted answer(s). Text: one or more, `\|`-separated. Numeric: the target number. Required unless `manual-grade`. |
+| `tolerance`      | number ≥ 0          | `0`              | (numeric) Absolute tolerance: passed iff `\|input − answer\| ≤ tolerance`.                                         |
+| `case-sensitive` | boolean             | absent           | (text) Match case exactly. Default: case-insensitive.                                                              |
+| `placeholder`    | string              | absent           | Input placeholder text.                                                                                            |
+| `submit-label`   | string              | `"Check answer"` | Label of the submit button.                                                                                        |
+| `retry`          | boolean             | absent           | Allow re-answering after feedback (re-emits on each submit).                                                       |
+| `manual-grade`   | boolean             | absent           | No `answer`; emits `result:"completed"` (no pass/fail) — capture an open response.                                 |
 
 ## 4. Slots & parts
 
@@ -65,11 +65,11 @@ Submitting an empty input shows "Enter an answer first." and does **not** emit. 
 
 Native semantics; no custom roving focus:
 
-| Key                 | Action                                                       |
-| ------------------- | ------------------------------------------------------------ |
-| `Tab` / `Shift+Tab` | Move between the input and the submit button.                |
-| `Enter` (in input)  | Submit the answer (equivalent to activating the button).     |
-| `Enter` (on button) | Submit the answer.                                           |
+| Key                 | Action                                                   |
+| ------------------- | -------------------------------------------------------- |
+| `Tab` / `Shift+Tab` | Move between the input and the submit button.            |
+| `Enter` (in input)  | Submit the answer (equivalent to activating the button). |
+| `Enter` (on button) | Submit the answer.                                       |
 
 ## 7. Screen-reader behavior
 

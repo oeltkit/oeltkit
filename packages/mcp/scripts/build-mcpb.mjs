@@ -53,7 +53,9 @@ await build({
   format: "esm",
   target: "node20",
   // Keep the dynamic require shim esbuild needs for some CJS deps under ESM.
-  banner: { js: "import { createRequire } from 'node:module';\nconst require = createRequire(import.meta.url);" },
+  banner: {
+    js: "import { createRequire } from 'node:module';\nconst require = createRequire(import.meta.url);",
+  },
 });
 
 console.log("Copying repo assets into bundle (mirrors repo layout)…");
