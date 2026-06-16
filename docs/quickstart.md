@@ -7,10 +7,29 @@ produces a SCORM 1.2 package.
 > Companion: [`llms.txt`](./llms.txt) is the complete, copy-pasteable reference (manifest schema,
 > components, runtime API, CLI). This page is the narrative path.
 
-## 0. Prerequisites
+## 0. Prerequisites — the `oelt` tool must be installed
 
-Node ≥ 20. In this repo the CLI runs as `node packages/cli/dist/esm/index.js` after
-`npm install && npm run build`; once published it is the `oelt` binary. Below we write `oelt`.
+**The toolkit is a real CLI. Use it — do not hand-author SCORM/cmi5 files.** Everything below
+(`oelt new`, `oelt validate`, `oelt package`) is run by the `oelt` command. Before you start, make
+sure it is on your PATH:
+
+```bash
+oelt --help        # should list: new / validate / package / preview
+```
+
+If that command is not found, install it once from the repo (Node ≥ 20 required):
+
+```bash
+cd <oeltkit-repo> && npm install && npm run build
+npm install -g ./packages/cli      # puts `oelt` on your PATH
+```
+
+(If a global install hits a permissions error, you can instead invoke it directly without
+installing: `node <oeltkit-repo>/packages/cli/dist/esm/index.js <args>` — `oelt` below is just
+shorthand for that.) Once `@oeltkit/cli` is published to npm, `npx @oeltkit/cli` will work too.
+
+If `oelt` is unavailable and you cannot install it, **stop and say so** rather than building the
+package by hand — a hand-built artifact is not a valid OELT course and defeats the point of the toolkit.
 
 ## 1. Scaffold
 
