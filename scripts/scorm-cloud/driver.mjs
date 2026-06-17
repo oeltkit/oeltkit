@@ -71,11 +71,13 @@ export function makeContext(page, frame) {
       await frame.locator("#oelt-toc").getByText(label, { exact: false }).click();
     },
 
-    /** Assert the current page heading. */
+    /**
+     * Wait for the current page heading to read `text`. Web-first wait (not a
+     * one-shot read) so it tolerates the LMS's navigate→render latency — on
+     * SCORM Cloud the page swap lags the click by enough to race a bare read.
+     */
     async expectH1(text) {
-      await frame.locator("#oelt-page h1").first().waitFor();
-      const got = (await frame.locator("#oelt-page h1").first().textContent())?.trim();
-      if (got !== text) throw new Error(`expected page heading "${text}", got "${got}"`);
+      await frame.locator("#oelt-page h1", { hasText: text }).first().waitFor({ timeout: 15_000 });
     },
 
     /** Click a button (optionally scoped to a CSS selector) by accessible name. */

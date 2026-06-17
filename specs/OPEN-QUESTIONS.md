@@ -36,6 +36,14 @@ _None._
   - **`@xapi/cmi5` is AU/content-side and cmi5-conformant** — it _does_ fit, but depends on `@xapi/xapi`, adding bundle weight against the ~30 KB runtime target. The cmi5 wire protocol is small and already validated end-to-end by the harness.
 - **Decision (Jim, 2026-06-14):** Keep the zero-dependency content-side adapters (`adapters/{scorm12,scorm2004,cmi5,web}.ts`). **Arbitrated by the Phase 0 exit gate:** a fresh-session SCORM 1.2 package imported, completed, and scored correctly on SCORM Cloud across two different LLM clients with no hand-fixing — the hand-written adapters pass real-LMS conformance, so there's no case for pulling in `scorm-again`. Revisit `@xapi/cmi5` only if cmi5 statement/State edge cases (attachments, batching, auth refresh) later outgrow the minimal client.
 
+### OQ-003 — cmi5/xAPI activity IRI for a reverse-DNS `course.id` — DECIDED (synthesize under oeltkit namespace), 2026-06-17
+
+- **Context:** `packages/cli` cmi5 manifest generation + `runtime/adapters/cmi5.ts`; surfaced by Task 10's second live SCORM Cloud run.
+- **Question:** cmi5 (and xAPI) require the course/AU `id` to be an **absolute IRI**, and the AU id becomes the xAPI activity id the LMS hands the AU at launch. But `course.id` is a reverse-DNS string (e.g. `org.oeltkit.spike`), which is not a URI — SCORM Cloud rejects the import (`Activity ID 'org.oeltkit.spike' is not an absolute URI`).
+- **Options considered:** (a) require authors to write a URI `course.id` — breaks SCORM/cmi5 parity and existing examples; (b) synthesize an IRI from `course.id` only for cmi5; (c) URN scheme (`urn:oelt:<id>`) — valid but less conventional for xAPI.
+- **Blocking?:** no — local to the cmi5 surface and reversible.
+- **Decision:** option (b). `courseActivityIri(id)` keeps an author-supplied absolute IRI as-is, else mints `https://oeltkit.org/cmi5/<id>` (AU = `<that>/au`). The runtime needs no change: the cmi5 adapter already reads `activityId` from the launch parameters, so it uses whatever IRI the LMS derived from the AU id. The harness keeps using `course.id` internally (its own fake-launch identity) — unaffected. If a course-structure/identity spec later formalizes activity ids, fold this in there.
+
 ### OQ-002 — `<oelt-branching>` loops vs the suspend-state cap — RESOLVED (c), 2026-06-11
 
 - **Context:** [`components/branching.md`](./components/branching.md) §8; surfaced by Task 04 spec drafting.

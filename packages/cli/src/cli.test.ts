@@ -47,6 +47,18 @@ describe("manifest generation", () => {
     expect(au.indexOf("<title>")).toBeLessThan(au.indexOf("<description>"));
     expect(au.indexOf("<description>")).toBeLessThan(au.indexOf("<url>"));
   });
+
+  it("cmi5: course + au ids are absolute IRIs synthesized from a reverse-DNS id", () => {
+    // cmi5/xAPI require an absolute IRI; SCORM Cloud rejects "org.oelt.test"
+    // ("Activity ID … is not an absolute URI"). Task 10 second live run.
+    const xml = cmi5Xml(base());
+    expect(xml).toContain('<course id="https://oeltkit.org/cmi5/org.oelt.test">');
+    expect(xml).toContain('<au id="https://oeltkit.org/cmi5/org.oelt.test/au"');
+    // An author-supplied absolute IRI is preserved as-is.
+    expect(cmi5Xml(base({ id: "https://acme.example/c/1" }))).toContain(
+      '<course id="https://acme.example/c/1">',
+    );
+  });
 });
 
 describe("validateCourse cross-checks", () => {

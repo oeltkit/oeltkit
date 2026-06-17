@@ -66,6 +66,16 @@ export function scorm2004Manifest(c: CourseManifest): string {
 `;
 }
 
+/**
+ * The cmi5 course/AU identity IRI for a course. cmi5 (and xAPI) require an
+ * absolute IRI; if the author's `course.id` already carries a URI scheme we keep
+ * it, otherwise we mint a stable one under the oeltkit namespace. See
+ * specs/OPEN-QUESTIONS.md OQ-003.
+ */
+export function courseActivityIri(id: string): string {
+  return /^[a-z][a-z0-9+.-]*:/i.test(id) ? id : `https://oeltkit.org/cmi5/${id}`;
+}
+
 export function cmi5Xml(c: CourseManifest): string {
   const lang = xmlEscape(c.lang);
   const t = xmlEscape(c.title);
@@ -78,13 +88,20 @@ export function cmi5Xml(c: CourseManifest): string {
   // validates against the XSD on import). We have no separate description field
   // in course.json, so the title doubles as the (required) description.
   const langstring = (text: string): string => `<langstring lang="${lang}">${text}</langstring>`;
+  // cmi5 requires the course/AU `id` to be an absolute IRI (the AU id also
+  // becomes the xAPI activity id the LMS hands the AU at launch). course.json
+  // ids are reverse-DNS strings (e.g. "org.oeltkit.spike"), which are NOT URIs —
+  // SCORM Cloud rejects them ("Activity ID … is not an absolute URI"). Synthesize
+  // an IRI under the project namespace unless the author already used one.
+  const courseIri = courseActivityIri(c.id);
+  const auIri = xmlEscape(`${courseActivityIri(c.id)}/au`);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <courseStructure xmlns="https://w3id.org/xapi/profiles/cmi5/v1/CourseStructure.xsd">
-  <course id="${xmlEscape(c.id)}">
+  <course id="${xmlEscape(courseIri)}">
     <title>${langstring(t)}</title>
     <description>${langstring(t)}</description>
   </course>
-  <au id="${xmlEscape(c.id)}/au" moveOn="${moveOn}"${masteryAttr}>
+  <au id="${auIri}" moveOn="${moveOn}"${masteryAttr}>
     <title>${langstring(t)}</title>
     <description>${langstring(t)}</description>
     <url>index.html</url>
