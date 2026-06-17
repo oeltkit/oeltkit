@@ -78,6 +78,6 @@ jobs:
         if: github.event_name == 'pull_request'
         run: npx commitlint --from "${{ github.event.pull_request.base.sha }}" --to "${{ github.event.pull_request.head.sha }}" --verbose
 
-  # SCORM Cloud real-LMS conformance lives in its own path-filtered + weekly
-  # workflow (.github/workflows/scorm-cloud.yml) — it consumes registration
-  # quota, so it must not run on every push (Task 10).
+  # SCORM Cloud real-LMS conformance lives in its own workflow
+  # (.github/workflows/scorm-cloud.yml), triggered manually + weekly only — it
+  # consumes registration quota, so it must not run on every push (Task 10).

@@ -82,11 +82,14 @@ quota).
 
 ### In CI
 
-`.github/workflows/scorm-cloud.yml` runs on `workflow_dispatch`, weekly (Mondays
-06:17 UTC), and on push/PR that touch `packages/runtime/**`, `packages/cli/**`,
-or this pipeline. If `SCORM_CLOUD_APP_ID` / `SCORM_CLOUD_SECRET_KEY` are absent
-(fork PRs), the runner **skips with a notice and exits 0** — it never fails the
-build, and the rest of CI works with no credentials.
+`.github/workflows/scorm-cloud.yml` runs on **`workflow_dispatch` (manual)** and
+**weekly** (Mondays 06:17 UTC) only — it is intentionally NOT triggered on push
+or PR, because a full run creates ~7 registrations and the SCORM Cloud account
+has a lifetime registration cap. After changing `packages/runtime`,
+`packages/cli`, or this pipeline, trigger a run manually (Actions → "SCORM Cloud
+conformance" → Run workflow). If `SCORM_CLOUD_APP_ID` / `SCORM_CLOUD_SECRET_KEY`
+are absent (fork PRs), the runner **skips with a notice and exits 0** — it never
+fails the build, and the rest of CI works with no credentials.
 
 ## Failure artifacts
 

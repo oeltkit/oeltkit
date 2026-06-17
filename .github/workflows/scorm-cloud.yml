@@ -5,11 +5,12 @@ name: SCORM Cloud conformance
 # and asserts completion/success/score via the v2 REST API. This is the standing
 # proof that the zero-dependency adapters (OQ-001) conform on a real LMS.
 #
-# NOT run on every push — it consumes SCORM Cloud registration quota. Triggers:
-#   - manual (workflow_dispatch)
-#   - weekly (Mondays) as a regression heartbeat
-#   - push/PR that touches the surfaces affecting packaged output
-#     (packages/runtime, packages/cli) or this pipeline itself.
+# NOT run on every push — it consumes SCORM Cloud registration quota (a full run
+# creates ~7 registrations, and the account has a lifetime cap). Triggers are
+# deliberately limited to:
+#   - manual (workflow_dispatch) — run after changes to packages/runtime,
+#     packages/cli, or this pipeline that you want verified on a real LMS.
+#   - weekly (Mondays) as a regression heartbeat.
 #
 # Credentials (SCORM_CLOUD_APP_ID / SCORM_CLOUD_SECRET_KEY) live in repo secrets.
 # When absent (fork PRs), the runner SKIPS with a notice and exits 0 — never fails.
@@ -18,19 +19,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "17 6 * * 1" # 06:17 UTC every Monday
-  push:
-    branches: [main]
-    paths:
-      - "packages/runtime/**"
-      - "packages/cli/**"
-      - "scripts/scorm-cloud/**"
-      - ".github/workflows/scorm-cloud.yml"
-  pull_request:
-    paths:
-      - "packages/runtime/**"
-      - "packages/cli/**"
-      - "scripts/scorm-cloud/**"
-      - ".github/workflows/scorm-cloud.yml"
 
 permissions:
   contents: read
