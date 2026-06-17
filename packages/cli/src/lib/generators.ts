@@ -72,13 +72,21 @@ export function cmi5Xml(c: CourseManifest): string {
   const mastery = c.tracking?.score?.mastery;
   const moveOn = typeof mastery === "number" ? "CompletedAndPassed" : "Completed";
   const masteryAttr = typeof mastery === "number" ? ` masteryScore="${mastery}"` : "";
+  // cmi5 CourseStructure schema (courseType / auType) requires <description> and
+  // fixes element order: <title> then <description> then <url>. Both <course>
+  // and <au> are affected — SCORM Cloud rejects the package otherwise (it
+  // validates against the XSD on import). We have no separate description field
+  // in course.json, so the title doubles as the (required) description.
+  const langstring = (text: string): string => `<langstring lang="${lang}">${text}</langstring>`;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <courseStructure xmlns="https://w3id.org/xapi/profiles/cmi5/v1/CourseStructure.xsd">
   <course id="${xmlEscape(c.id)}">
-    <title><langstring lang="${lang}">${t}</langstring></title>
+    <title>${langstring(t)}</title>
+    <description>${langstring(t)}</description>
   </course>
   <au id="${xmlEscape(c.id)}/au" moveOn="${moveOn}"${masteryAttr}>
-    <title><langstring lang="${lang}">${t}</langstring></title>
+    <title>${langstring(t)}</title>
+    <description>${langstring(t)}</description>
     <url>index.html</url>
   </au>
 </courseStructure>

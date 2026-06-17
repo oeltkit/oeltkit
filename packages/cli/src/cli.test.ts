@@ -35,6 +35,18 @@ describe("manifest generation", () => {
     expect(without).toContain('moveOn="Completed"');
     expect(without).not.toContain("masteryScore");
   });
+
+  it("cmi5: course + au carry a <description>, ordered before <url> (XSD-valid)", () => {
+    // The cmi5 CourseStructure XSD requires <description> after <title>, and the
+    // <au> sequence is title → description → url. SCORM Cloud rejects the import
+    // otherwise (regression: Task 10 first live run).
+    const xml = cmi5Xml(base());
+    expect(xml).toContain("<description>");
+    // <au> children appear in schema order.
+    const au = xml.slice(xml.indexOf("<au "));
+    expect(au.indexOf("<title>")).toBeLessThan(au.indexOf("<description>"));
+    expect(au.indexOf("<description>")).toBeLessThan(au.indexOf("<url>"));
+  });
 });
 
 describe("validateCourse cross-checks", () => {

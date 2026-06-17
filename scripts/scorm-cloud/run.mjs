@@ -25,7 +25,7 @@ import { fileURLToPath } from "node:url";
 import JSZip from "jszip";
 import { chromium } from "@playwright/test";
 import { ScormCloudClient } from "./client.mjs";
-import { findContentFrame, makeContext } from "./driver.mjs";
+import { findContentFrame, makeContext, openCourseWindow } from "./driver.mjs";
 import { EXAMPLES, LEARNER } from "./playthroughs.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
@@ -181,17 +181,26 @@ function loadCourseId(exampleDir) {
 }
 
 // ── live SCORM Cloud driver ─────────────────────────────────────────────────────
-async function driveOnCloud(browser, client, registrationId, scenario, artifactsDir, label) {
+async function driveOnCloud(
+  browser,
+  client,
+  registrationId,
+  scenario,
+  artifactsDir,
+  label,
+  example,
+) {
   const context = await browser.newContext();
   await context.tracing.start({ screenshots: true, snapshots: true });
-  const page = await context.newPage();
+  const launcher = await context.newPage();
+  let target = launcher; // the page hosting the course (popup or launcher)
   let problems = [];
   let saveTrace = false;
   try {
     const launchUrl = await client.buildLaunchLink(registrationId);
-    await page.goto(launchUrl, { waitUntil: "load" });
-    const frame = await findContentFrame(page);
-    const ctx = makeContext(page, frame);
+    target = await openCourseWindow(context, launcher, launchUrl);
+    const frame = await findContentFrame(target);
+    const ctx = makeContext(target, frame);
     await scenario.drive(ctx);
     await ctx.terminate();
     await sleep(1500); // let the final LMSCommit/Terminate flush to the LMS
@@ -207,13 +216,14 @@ async function driveOnCloud(browser, client, registrationId, scenario, artifacts
 
     // Resume round-trip: relaunch the SAME registration and verify state restored.
     if (scenario.resume && problems.length === 0) {
-      const resumePage = await context.newPage();
+      const resumeLauncher = await context.newPage();
+      let resumeTarget = resumeLauncher;
       try {
         const resumeUrl = await client.buildLaunchLink(registrationId);
-        await resumePage.goto(resumeUrl, { waitUntil: "load" });
-        const rFrame = await findContentFrame(resumePage);
-        await scenario.resume(makeContext(resumePage, rFrame));
-        await resumePage.evaluate(() => window.oelt?.terminate?.());
+        resumeTarget = await openCourseWindow(context, resumeLauncher, resumeUrl);
+        const rFrame = await findContentFrame(resumeTarget);
+        await scenario.resume(makeContext(resumeTarget, rFrame));
+        await resumeTarget.evaluate(() => window.oelt?.terminate?.());
         // Completion must not be downgraded by the resume.
         const after = await client.getRegistration(registrationId);
         if (
@@ -225,14 +235,16 @@ async function driveOnCloud(browser, client, registrationId, scenario, artifacts
           );
         }
       } finally {
-        await resumePage.close();
+        if (!resumeTarget.isClosed()) await resumeTarget.close();
+        if (!resumeLauncher.isClosed()) await resumeLauncher.close();
       }
     }
 
     if (problems.length) {
       saveTrace = true;
       await writeFailureArtifacts(browser, client, registrationId, scenario, artifactsDir, label, {
-        page,
+        page: target,
+        example,
         problems,
       });
     }
@@ -241,7 +253,8 @@ async function driveOnCloud(browser, client, registrationId, scenario, artifacts
     problems.push(`exception: ${err.message}`);
     try {
       await writeFailureArtifacts(browser, client, registrationId, scenario, artifactsDir, label, {
-        page,
+        page: target,
+        example,
         problems,
       });
     } catch (e2) {
@@ -271,7 +284,7 @@ async function writeFailureArtifacts(
   scenario,
   artifactsDir,
   label,
-  { page, problems },
+  { page, example, problems },
 ) {
   mkdirSync(artifactsDir, { recursive: true });
   try {
@@ -297,7 +310,6 @@ async function writeFailureArtifacts(
   }
   // Local diff baseline: drive the same scenario against the web package locally.
   try {
-    const example = label.split("-")[0];
     const record = await driveOnWeb(browser, example, { ...scenario, resume: undefined });
     writeFileSync(
       join(artifactsDir, `${label}.local-web.json`),
@@ -392,7 +404,15 @@ async function runLive(flags) {
             await client.createRegistration({ courseId, registrationId, learner: LEARNER });
             createdRegs.push(registrationId);
             log(`  ▶ scenario "${sc.name}" — reg=${registrationId}`);
-            const r = await driveOnCloud(browser, client, registrationId, sc, artifactsDir, label);
+            const r = await driveOnCloud(
+              browser,
+              client,
+              registrationId,
+              sc,
+              artifactsDir,
+              label,
+              ex.example,
+            );
             results.push(r);
             log(r.ok ? `    ✓ ${label}` : `    ✗ ${label}: ${r.problems.join("; ")}`);
           }

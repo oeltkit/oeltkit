@@ -7,6 +7,27 @@
 // deeply the host nests our content.
 
 /**
+ * Open a SCORM Cloud launch URL and return the Page that actually hosts the
+ * course. SCORM Cloud's default player launches the SCO in a NEW WINDOW via
+ * window.open (the launch URL itself just shows a "we launched it in a new
+ * window" notice). Headless Chromium has no popup blocker, so that becomes a new
+ * Playwright Page on the context. If no popup appears (e.g. a player configured
+ * to launch inline, or the local dry-run), the launcher page itself is returned.
+ *
+ * @param {import('@playwright/test').BrowserContext} context
+ * @param {import('@playwright/test').Page} page  page to navigate to the launch URL
+ * @param {string} launchUrl
+ * @returns {Promise<import('@playwright/test').Page>}
+ */
+export async function openCourseWindow(context, page, launchUrl, { timeoutMs = 20_000 } = {}) {
+  const popupPromise = context.waitForEvent("page", { timeout: timeoutMs }).catch(() => null);
+  await page.goto(launchUrl, { waitUntil: "load" });
+  const popup = await popupPromise;
+  if (popup) await popup.waitForLoadState("load").catch(() => {});
+  return popup ?? page;
+}
+
+/**
  * Find the Playwright Frame that contains the OELT player. SCORM Cloud serves
  * the SCO in a (possibly nested) iframe; the local dry-run serves it at the top.
  * We detect it by the player's stable root element (#course-root), then wait for
