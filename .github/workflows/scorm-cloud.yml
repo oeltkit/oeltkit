@@ -17,6 +17,15 @@ name: SCORM Cloud conformance
 
 on:
   workflow_dispatch:
+    inputs:
+      example:
+        description: "Limit to one example (e.g. spike); blank = all"
+        required: false
+        default: ""
+      target:
+        description: "Limit to one target (scorm12 | scorm2004 | cmi5); blank = all"
+        required: false
+        default: ""
   schedule:
     - cron: "17 6 * * 1" # 06:17 UTC every Monday
 
@@ -54,7 +63,15 @@ jobs:
         env:
           SCORM_CLOUD_APP_ID: ${{ secrets.SCORM_CLOUD_APP_ID }}
           SCORM_CLOUD_SECRET_KEY: ${{ secrets.SCORM_CLOUD_SECRET_KEY }}
-        run: node scripts/scorm-cloud/run.mjs
+          EX: ${{ inputs.example }}
+          TGT: ${{ inputs.target }}
+        run: |
+          # Manual dispatch can scope to one example/target to conserve quota;
+          # scheduled runs pass neither input and exercise the full matrix.
+          args=()
+          [ -n "$EX" ] && args+=(--example "$EX")
+          [ -n "$TGT" ] && args+=(--target "$TGT")
+          node scripts/scorm-cloud/run.mjs "${args[@]}"
 
       - name: Upload failure artifacts
         if: failure()

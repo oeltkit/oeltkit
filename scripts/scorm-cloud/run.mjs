@@ -114,7 +114,10 @@ async function serveDir(dir) {
 function assertResult(reg, expect) {
   const completion = reg.registrationCompletion ?? "UNKNOWN";
   const success = reg.registrationSuccess ?? "UNKNOWN";
-  const scaled = reg.score?.scaled;
+  // SCORM Cloud reports score.scaled on a 0–100 scale (e.g. 100 for a perfect
+  // score); our expectations + the web localStorage record use 0–1. Normalize.
+  const rawScaled = reg.score?.scaled;
+  const scaled = rawScaled != null && rawScaled > 1 ? rawScaled / 100 : rawScaled;
   const problems = [];
   if (expect.completion && completion !== expect.completion)
     problems.push(`completion: expected ${expect.completion}, got ${completion}`);
@@ -192,8 +195,15 @@ async function driveOnCloud(
 ) {
   const context = await browser.newContext();
   await context.tracing.start({ screenshots: true, snapshots: true });
+  // Capture browser console + page errors across all pages (incl. the popup) —
+  // the runtime emits "SCORM 2004 API not found" etc. here, and a failed cmi5
+  // adapter.start() surfaces as a page error. Written to the failure artifact.
+  const consoleLog = [];
+  context.on("console", (m) => consoleLog.push(`[${m.type()}] ${m.text()}`));
+  context.on("pageerror", (e) => consoleLog.push(`[pageerror] ${e.message}`));
   const launcher = await context.newPage();
   let target = launcher; // the page hosting the course (popup or launcher)
+  let detectedTarget = null; // window.oelt.target as the runtime auto-detected it
   let problems = [];
   let saveTrace = false;
   try {
@@ -201,6 +211,9 @@ async function driveOnCloud(
     target = await openCourseWindow(context, launcher, launchUrl);
     const frame = await findContentFrame(target);
     const ctx = makeContext(target, frame);
+    // Which adapter did the runtime pick on the real LMS? A "web" here means
+    // SCORM API discovery failed and tracking silently went to localStorage.
+    detectedTarget = await frame.evaluate(() => window.oelt?.target).catch(() => null);
     await scenario.drive(ctx);
     await ctx.terminate();
     await sleep(1500); // let the final LMSCommit/Terminate flush to the LMS
@@ -246,6 +259,8 @@ async function driveOnCloud(
         page: target,
         example,
         problems,
+        detectedTarget,
+        consoleLog,
       });
     }
   } catch (err) {
@@ -256,6 +271,8 @@ async function driveOnCloud(
         page: target,
         example,
         problems,
+        detectedTarget,
+        consoleLog,
       });
     } catch (e2) {
       log(`  (failed to write artifacts: ${e2.message})`);
@@ -284,9 +301,13 @@ async function writeFailureArtifacts(
   scenario,
   artifactsDir,
   label,
-  { page, example, problems },
+  { page, example, problems, detectedTarget = null, consoleLog = [] },
 ) {
   mkdirSync(artifactsDir, { recursive: true });
+  // diag: the adapter the runtime auto-detected on the LMS + browser console.
+  // A detectedTarget of "web" (when an LMS target was expected) means SCORM API
+  // discovery failed and tracking silently went to localStorage instead.
+  const diag = { problems, detectedTarget, consoleLog };
   try {
     const reg = await client.getRegistration(registrationId, {
       includeChildResults: true,
@@ -294,12 +315,12 @@ async function writeFailureArtifacts(
     });
     writeFileSync(
       join(artifactsDir, `${label}.cloud.json`),
-      JSON.stringify({ problems, registration: reg }, null, 2),
+      JSON.stringify({ ...diag, registration: reg }, null, 2),
     );
   } catch (e) {
     writeFileSync(
       join(artifactsDir, `${label}.cloud.json`),
-      JSON.stringify({ problems, error: e.message }, null, 2),
+      JSON.stringify({ ...diag, error: e.message }, null, 2),
     );
   }
   try {
