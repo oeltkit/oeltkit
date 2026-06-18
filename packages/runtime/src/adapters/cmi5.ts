@@ -1,137 +1,52 @@
-// cmi5 content-side (AU) adapter — a minimal, dependency-free client conformant
-// to the cmi5 spec (AICC/CMI-5_Spec_Current). See specs/OPEN-QUESTIONS.md OQ-001
-// for why this is hand-written rather than wrapping @xapi/cmi5.
-//   §8.1 launch params · §8.2 auth-token fetch · §10.2 LMS.LaunchData ·
-//   §9.3 verbs · §9.6.2 contextTemplate merge (incl. cmi5 category activity).
-// Only place cmi5/xAPI calls are made.
+// cmi5 content-side (AU) adapter — built on @xapi/cmi5 (OQ-004). The hand-written
+// client produced statements SCORM Cloud's LRS rejected (400/403); @xapi/cmi5 is
+// a fully spec-conformant cmi5 Profile implementation. It is the one place
+// cmi5/xAPI calls are made. Suspend/location resume uses the xAPI State API via
+// the library's underlying connection.
+//   §8.1 launch params · §8.2 auth-token · §9.3 verbs · §10 State.
 
+import Cmi5 from "@xapi/cmi5";
 import type { Adapter, Emit, InteractionReport, Outcome } from "../types.js";
 
-const VERB_IRI: Record<string, string> = {
-  initialized: "http://adlnet.gov/expapi/verbs/initialized", // §9.3.2
-  completed: "http://adlnet.gov/expapi/verbs/completed", // §9.3.3
-  passed: "http://adlnet.gov/expapi/verbs/passed", // §9.3.4
-  failed: "http://adlnet.gov/expapi/verbs/failed", // §9.3.5
-  terminated: "http://adlnet.gov/expapi/verbs/terminated", // §9.3.8
-  answered: "http://adlnet.gov/expapi/verbs/answered", // ADL (interactions)
-};
-
-interface LaunchParams {
-  endpoint: string;
-  fetchUrl: string;
-  actor: unknown;
-  registration: string;
-  activityId: string;
-}
-
-interface LaunchData {
-  contextTemplate?: Record<string, unknown>;
-  launchMode?: string;
-  moveOn?: string;
-  masteryScore?: number;
-}
-
-function readLaunchParams(): LaunchParams {
-  const q = new URLSearchParams(window.location.search);
-  // The endpoint is concatenated with "activities/state" / "statements", so it
-  // MUST end with "/". Real LMSs (e.g. SCORM Cloud) supply it without a trailing
-  // slash, which otherwise yields "…/lrsactivities/state" → 404 → start() throws
-  // → the AU never renders (Task 10 / OQ-004).
-  const rawEndpoint = q.get("endpoint") ?? "";
-  return {
-    endpoint: rawEndpoint && !rawEndpoint.endsWith("/") ? `${rawEndpoint}/` : rawEndpoint,
-    fetchUrl: q.get("fetch") ?? "",
-    actor: q.get("actor") ? JSON.parse(q.get("actor")!) : null,
-    registration: q.get("registration") ?? "",
-    activityId: q.get("activityId") ?? "",
-  };
-}
+const SUSPEND_STATE_ID = "suspendData";
+const LOCATION_STATE_ID = "oelt.location";
 
 export function createCmi5Adapter(emit: Emit): Adapter {
-  const p = readLaunchParams();
-  let token = "";
-  let launchData: LaunchData = {};
+  const cmi5 = new Cmi5(); // reads the cmi5 launch parameters from the URL (§8.1)
+  const lp = cmi5.getLaunchParameters();
   let suspendCache = "";
   let locationCache = "";
-  const sent = new Set<string>(); // verbs already sent (cmi5 send-once)
+  const sent = new Set<string>(); // cmi5 send-once verbs
 
-  // Serialize all writes (statements + State) so they are delivered in order —
-  // cmi5 requires initialized first and terminated last, and out-of-order PUTs
-  // to the State API would corrupt resume.
-  let net: Promise<unknown> = Promise.resolve();
-  const enqueue = (fn: () => Promise<unknown>): void => {
-    net = net.then(fn).catch(() => {});
-  };
-
-  const auth = (): Record<string, string> => ({
-    Authorization: `Basic ${token}`,
-    "X-Experience-API-Version": "1.0.3",
-    "content-type": "application/json",
+  const stateParams = (stateId: string) => ({
+    agent: lp.actor,
+    activityId: lp.activityId,
+    stateId,
+    registration: lp.registration,
   });
-  const withReg = (url: string): string =>
-    `${url}${url.includes("?") ? "&" : "?"}registration=${encodeURIComponent(p.registration)}`;
-  const stateUrl = (stateId: string): string =>
-    withReg(
-      `${p.endpoint}activities/state?stateId=${encodeURIComponent(stateId)}&activityId=${encodeURIComponent(p.activityId)}`,
-    );
-
-  function buildContext(): Record<string, unknown> {
-    return { registration: p.registration, ...structuredClone(launchData.contextTemplate ?? {}) };
-  }
-
-  function send(verb: string, result?: Record<string, unknown>): void {
-    const statement: Record<string, unknown> = {
-      actor: p.actor,
-      verb: { id: VERB_IRI[verb], display: { "en-US": verb } },
-      object: { id: p.activityId, objectType: "Activity" },
-      context: buildContext(),
-      timestamp: new Date().toISOString(),
-    };
-    if (result) statement.result = result;
-    enqueue(() =>
-      fetch(withReg(`${p.endpoint}statements`), {
-        method: "POST",
-        headers: auth(),
-        body: JSON.stringify(statement),
-      }),
-    );
-    const scaled =
-      result && typeof result.score === "object" && result.score
-        ? ((result.score as { scaled?: number }).scaled ?? null)
-        : null;
-    emit({ type: "statement", verb, scaled });
-  }
 
   return {
     name: "cmi5",
 
     async start() {
-      // §8.2 — fetch the auth token once.
-      const r = await fetch(p.fetchUrl, { method: "POST" });
-      token = (await r.json())["auth-token"];
-      emit({ type: "info", message: "cmi5 auth-token received" });
-      // §10.2 — read LMS.LaunchData. Tolerate a miss: a malformed/empty response
-      // must not reject start() (which would block the AU from ever rendering).
+      // §8.2 auth-token fetch + §9.3.2 initialized (MUST be first), and reads
+      // LMS.LaunchData (§10.2) — all handled by the library.
+      await cmi5.initialize();
+      emit({ type: "lifecycle", op: "initialize", adapter: "cmi5" });
+      emit({ type: "statement", verb: "initialized", scaled: null });
+      // Hydrate resume caches from the xAPI State API (best-effort).
       try {
-        const ld = await fetch(stateUrl("LMS.LaunchData"), { headers: auth() });
-        if (ld.ok) launchData = await ld.json();
+        const s = await cmi5.xapi!.getState(stateParams(SUSPEND_STATE_ID));
+        suspendCache = (s.data as { suspendData?: string })?.suspendData ?? "";
       } catch {
-        /* no launch data — proceed with defaults */
+        /* no prior suspend state */
       }
-      emit({
-        type: "info",
-        message: `LMS.LaunchData launchMode=${launchData.launchMode} moveOn=${launchData.moveOn}`,
-      });
-      // Hydrate resume caches from the State API.
       try {
-        const s = await fetch(stateUrl("suspendData"), { headers: auth() });
-        if (s.ok) suspendCache = (await s.json())?.suspendData ?? "";
-        const l = await fetch(stateUrl("oelt.location"), { headers: auth() });
-        if (l.ok) locationCache = (await l.json())?.location ?? "";
+        const l = await cmi5.xapi!.getState(stateParams(LOCATION_STATE_ID));
+        locationCache = (l.data as { location?: string })?.location ?? "";
       } catch {
-        /* no prior state */
+        /* no prior location */
       }
-      send("initialized"); // §9.3.2 — MUST be first
     },
 
     entry() {
@@ -143,13 +58,10 @@ export function createCmi5Adapter(emit: Emit): Adapter {
     },
     setSuspend(payload) {
       suspendCache = payload;
-      enqueue(() =>
-        fetch(stateUrl("suspendData"), {
-          method: "PUT",
-          headers: auth(),
-          body: JSON.stringify({ suspendData: payload }),
-        }),
-      );
+      void cmi5.xapi!.setState({
+        ...stateParams(SUSPEND_STATE_ID),
+        state: { suspendData: payload },
+      });
       emit({ type: "state", op: "set", key: "suspendData", value: payload, bytes: payload.length });
     },
 
@@ -158,51 +70,41 @@ export function createCmi5Adapter(emit: Emit): Adapter {
     },
     setLocation(pageId) {
       locationCache = pageId;
-      enqueue(() =>
-        fetch(stateUrl("oelt.location"), {
-          method: "PUT",
-          headers: auth(),
-          body: JSON.stringify({ location: pageId }),
-        }),
-      );
+      void cmi5.xapi!.setState({ ...stateParams(LOCATION_STATE_ID), state: { location: pageId } });
     },
 
     applyOutcome(o: Outcome) {
-      // cmi5 send-once, in order: completed → passed/failed.
+      // cmi5 send-once, in order: completed → passed/failed (§9.3.3–9.3.5).
       if (o.completion && !sent.has("completed")) {
         sent.add("completed");
-        send(
-          "completed",
-          o.success == null && o.score != null ? { score: { scaled: o.score } } : undefined,
-        );
+        void cmi5.complete();
+        emit({ type: "statement", verb: "completed", scaled: o.score ?? null });
       }
       if (o.success && !sent.has(o.success)) {
         sent.add(o.success);
-        send(o.success, {
-          success: o.success === "passed",
-          score: o.score != null ? { scaled: o.score } : undefined,
-        });
+        if (o.success === "passed") void cmi5.pass(o.score ?? undefined);
+        else void cmi5.fail(o.score ?? undefined);
+        emit({ type: "statement", verb: o.success, scaled: o.score ?? null });
       }
     },
 
     reportInteraction(r: InteractionReport) {
-      send("answered", {
-        success: r.result === "passed",
-        ...(r.score != null ? { score: { scaled: r.score } } : {}),
-        ...(r.response != null ? { response: r.response } : {}),
-      });
+      // Item-level analytics are emitted to the harness panel; the cmi5 outcome
+      // statements (above) carry conformance. (Per-interaction xAPI statements
+      // can be added via cmi5.interaction* later if needed.)
       emit({ type: "interaction", id: r.id, result: r.result, scaled: r.score ?? null });
     },
 
     commit() {
-      // State/statements are PUT/POSTed eagerly; nothing to flush.
+      // Statements + State are sent eagerly by the library; nothing to flush.
     },
 
     terminate() {
       if (sent.has("terminated")) return;
       sent.add("terminated");
-      send("terminated"); // §9.3.8 — MUST be last
+      void cmi5.terminate(); // §9.3.8 — MUST be last
       emit({ type: "lifecycle", op: "terminate", adapter: "cmi5" });
+      emit({ type: "statement", verb: "terminated", scaled: null });
     },
   };
 }

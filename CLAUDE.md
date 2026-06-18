@@ -26,7 +26,7 @@ docs/           Docs site source + llms.txt
 
 ## Hard rules
 
-1. **No runtime dependencies** in `@oeltkit/runtime` and `@oeltkit/components` except `scorm-again` and `@xapi/*` (runtime only, bundled). Dev dependencies are fine. Adding a runtime dep is a deliberate architecture decision, not a shortcut for a quick fix — make it consciously.
+1. **No runtime dependencies** in `@oeltkit/runtime` and `@oeltkit/components` except `scorm-again`, `@xapi/*`, and **`@xapi/cmi5`** (runtime only, bundled). Dev dependencies are fine. Adding a runtime dep is a deliberate architecture decision, not a shortcut for a quick fix — make it consciously. **Note (OQ-004, 2026-06-18):** `@xapi/cmi5` is permitted for the cmi5 adapter despite pulling in transitive non-`@xapi` deps (`axios`, `deepmerge`, `uuid`) — the hand-written cmi5 client produced statements SCORM Cloud's LRS rejected (400/403), and matching real-LRS conformance by hand was judged not worth the iteration. The cost is a larger runtime bundle (well over the ~30 KB target) for cmi5 packages; accepted deliberately. SCORM 1.2/2004 stay zero-dep (the SCORM libraries are LMS-side and do not fit the content runtime).
 2. **Web platform only:** vanilla custom elements. No Lit, no React, no framework — anywhere in shipped code.
 3. **TypeScript source → dual output:** plain ESM (`dist/esm/`) + single-file IIFE bundle (`dist/oelt.min.js`). Generated courses must work with no build step.
 4. **Styling via design tokens only.** Components consume `--oelt-*` custom properties; never hardcode colors/sizes; never use Tailwind in toolkit code. Expose `::part()` for theme authors.

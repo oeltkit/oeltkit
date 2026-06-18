@@ -21,5 +21,8 @@
     "build:bundle": "esbuild src/index.ts --bundle --format=iife --global-name=oelt --minify --sourcemap --outfile=dist/oelt.min.js",
     "build": "npm run build:esm && npm run build:bundle",
     "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@xapi/cmi5": "^1.4.0"
   }
 }

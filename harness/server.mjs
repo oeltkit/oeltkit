@@ -211,23 +211,31 @@ const server = createServer(async (req, res) => {
     }
 
     // §9 Statement API. Accept one statement or an array; store per registration.
+    // Standard xAPI carries the registration in the statement BODY
+    // (context.registration, cmi5 §9.6.1) — not a query param. Key by the body's
+    // registration (falling back to the query param) so the store works with any
+    // conformant cmi5 client (e.g. @xapi/cmi5), not just one that sets ?registration.
     if (path === "/cmi5/statements") {
-      const reg = q.get("registration") ?? "default";
+      const queryReg = q.get("registration") ?? "default";
       if (req.method === "GET") {
-        return sendJson(res, 200, lrsStatements.get(reg) ?? []);
+        return sendJson(res, 200, lrsStatements.get(queryReg) ?? []);
       }
       if (req.method === "PUT" || req.method === "POST") {
         const body = await readBody(req);
         const parsed = body ? JSON.parse(body) : [];
         const incoming = Array.isArray(parsed) ? parsed : [parsed];
-        const list = lrsStatements.get(reg) ?? [];
-        const ids = incoming.map((s) => s.id ?? `stmt-${list.length + 1}`);
-        list.push(...incoming);
-        lrsStatements.set(reg, list);
+        const ids = [];
+        for (const stmt of incoming) {
+          const reg = stmt?.context?.registration ?? queryReg;
+          const list = lrsStatements.get(reg) ?? [];
+          ids.push(stmt.id ?? `stmt-${list.length + 1}`);
+          list.push(stmt);
+          lrsStatements.set(reg, list);
+        }
         return sendJson(res, 200, ids);
       }
       if (req.method === "DELETE") {
-        lrsStatements.delete(reg);
+        lrsStatements.delete(queryReg);
         return send(res, 204, "");
       }
     }
