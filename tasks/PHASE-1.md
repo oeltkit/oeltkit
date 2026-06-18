@@ -32,7 +32,7 @@ Don't try to do all of Phase 1 in one literal session — context will rot and t
 2. **Sessions 2…n:** Task 08, one component or small batch per session (Batch A first; `<oelt-quiz>` is the consequential one). Chain within a batch freely.
 3. **Session:** Task 09 (after 07).
 4. **Session (anytime):** Task 10.
-5. **Session:** Task 11 Part A here, then a fresh session in the website repo for Part B.
+5. **Session:** Task 12 (SCORM 2004 honesty, toolkit-side) **+** Task 11 Part A (website-export) together here, then a fresh session in the website repo for Part B (which also carries the Task 12 website-side Standards-page caveat).
 
 ## Kickoff prompt (paste into a fresh Claude Code session in `~/dev/oeltkit`)
 
