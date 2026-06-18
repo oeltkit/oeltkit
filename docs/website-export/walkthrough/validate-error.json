@@ -1,0 +1,12 @@
+{
+  "ok": false,
+  "findings": [
+    {
+      "level": "error",
+      "code": "interaction-missing",
+      "message": "declared interaction \"q2\" has no element with that id in pages/check.html",
+      "message_human": "Page \"Knowledge check\" declares an interaction \"q2\" but no element with that id was found in pages/check.html — add id=\"q2\" to the element.",
+      "where": "check"
+    }
+  ]
+}

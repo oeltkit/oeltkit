@@ -17,6 +17,8 @@
     "test:watch": "vitest",
     "test:a11y": "playwright test",
     "validate:examples": "node test/validate-examples.mjs",
+    "website-export": "node scripts/website-export/generate.mjs && prettier --write docs/website-export",
+    "website-export:check": "npm run website-export && git diff --exit-code -- docs/website-export",
     "harness": "node harness/server.mjs",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",

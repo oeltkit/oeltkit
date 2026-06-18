@@ -41,6 +41,9 @@ jobs:
       - name: Validate example courses
         run: npm run validate:examples
 
+      - name: Website export is up to date
+        run: npm run website-export:check
+
   e2e:
     name: Harness e2e (Playwright)
     runs-on: ubuntu-latest

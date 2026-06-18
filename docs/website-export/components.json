@@ -1,0 +1,139 @@
+{
+  "generated": "scripts/website-export/generate.mjs",
+  "status": "beta",
+  "statusNote": "pending manual NVDA/VoiceOver passes",
+  "components": [
+    {
+      "name": "oelt-mcq",
+      "elements": ["oelt-mcq"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "multiple choice / multiple response",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<!-- single answer -->\n<oelt-mcq id=\"q1\" mode=\"single\" key=\"b\">\n  <p slot=\"prompt\">Which standard does cmi5 build on?</p>\n  <oelt-option value=\"a\">SCORM 1.2</oelt-option>\n  <oelt-option value=\"b\">xAPI</oelt-option>\n  <oelt-option value=\"c\">AICC</oelt-option>\n  <p slot=\"correct\">Right — cmi5 is an xAPI profile.</p>\n  <p slot=\"incorrect\">Not quite — cmi5 is built on xAPI.</p>\n</oelt-mcq>\n\n<!-- multiple response: key lists every correct value -->\n<oelt-mcq id=\"q2\" mode=\"multiple\" key=\"a c\">\n  <p slot=\"prompt\">Select every accessibility requirement (choose all that apply).</p>\n  <oelt-option value=\"a\">Keyboard operable</oelt-option>\n  <oelt-option value=\"b\">Mouse only</oelt-option>\n  <oelt-option value=\"c\">Visible focus</oelt-option>\n</oelt-mcq>\n\n<!-- ungraded poll: omit key, add manual-grade -->\n<oelt-mcq id=\"poll1\" manual-grade>\n  <p slot=\"prompt\">How confident are you?</p>\n  <oelt-option value=\"low\">Low</oelt-option>\n  <oelt-option value=\"high\">High</oelt-option>\n</oelt-mcq>",
+      "spec": "mcq.md",
+      "readmeSlug": "mcq"
+    },
+    {
+      "name": "oelt-branching",
+      "elements": ["oelt-branching"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "branching scenario",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<oelt-branching id=\"scenario1\" start=\"n1\">\n  <script type=\"application/json\">\n    {\n      \"nodes\": {\n        \"n1\": {\n          \"text\": \"<p>A learner shares a password with you. You…</p>\",\n          \"choices\": [\n            { \"label\": \"Use it\", \"to\": \"bad\", \"value\": \"use\" },\n            { \"label\": \"Report it\", \"to\": \"good\", \"value\": \"report\" }\n          ]\n        },\n        \"good\": { \"text\": \"<p>Correct — report and rotate it.</p>\", \"end\": \"passed\" },\n        \"bad\": {\n          \"text\": \"<p>That's a breach.</p>\",\n          \"choices\": [{ \"label\": \"Back\", \"to\": \"n1\", \"value\": \"back\" }]\n        }\n      }\n    }\n  </script>\n</oelt-branching>\n\n<!-- or load the graph from a file -->\n<oelt-branching id=\"scenario2\" src=\"scenarios/onboarding.json\" start=\"intro\"></oelt-branching>",
+      "spec": "branching.md",
+      "readmeSlug": "branching"
+    },
+    {
+      "name": "oelt-media",
+      "elements": ["oelt-media"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "accessible media",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<oelt-media id=\"intro-video\" threshold=\"0.9\">\n  <video controls preload=\"metadata\" width=\"480\">\n    <source src=\"media/intro.mp4\" type=\"video/mp4\" />\n    <track kind=\"captions\" src=\"media/intro.en.vtt\" srclang=\"en\" label=\"English\" default />\n  </video>\n  <div slot=\"transcript\">\n    <p>Full transcript of the introduction…</p>\n  </div>\n</oelt-media>",
+      "spec": "media.md",
+      "readmeSlug": "media"
+    },
+    {
+      "name": "oelt-text-entry",
+      "elements": ["oelt-text-entry"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "short text / numeric response",
+      "a11y": "the prompt is the input's `<label>`; on submit, focus moves to the `aria-live=\"polite\"` feedback and correctness is conveyed in text (visually-hidden \"Correct\"/\"Incorrect\" prefix), never colour alone. Numeric mode uses `inputmode=\"decimal\"` on a text input (not `type=\"number\"`) for a numeric soft keyboard without spinbutton/locale pitfalls.",
+      "example": "<!-- text: one accepted answer, or several via | -->\n<oelt-text-entry id=\"capital\" answer=\"Paris\">\n  <p slot=\"prompt\">What is the capital of France?</p>\n  <p slot=\"correct\">Correct — Paris.</p>\n  <p slot=\"incorrect\">Not quite — it's Paris.</p>\n</oelt-text-entry>\n\n<!-- numeric with tolerance -->\n<oelt-text-entry id=\"pi\" mode=\"numeric\" answer=\"3.14\" tolerance=\"0.01\">\n  <p slot=\"prompt\">Estimate π to two decimal places.</p>\n</oelt-text-entry>\n\n<!-- open response (no key): captured, marked completed -->\n<oelt-text-entry id=\"why\" manual-grade>\n  <p slot=\"prompt\">In a word, how did this lesson feel?</p>\n</oelt-text-entry>",
+      "spec": "text-entry.md",
+      "readmeSlug": "text-entry"
+    },
+    {
+      "name": "oelt-quiz",
+      "elements": ["oelt-quiz"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "question container",
+      "a11y": "a `::part(status)` live region announces progress (\"Answered 1 of 2 questions\") and the final outcome (\"Quiz complete. Score 75%.\"); pooled-out questions get `hidden`.",
+      "example": "<oelt-quiz id=\"final\" mastery=\"0.7\">\n  <oelt-mcq id=\"q1\" mode=\"single\" key=\"b\" weight=\"1\">\n    <p slot=\"prompt\">Which standard is recommended for new content?</p>\n    <oelt-option value=\"a\">SCORM 1.2</oelt-option>\n    <oelt-option value=\"b\">cmi5</oelt-option>\n  </oelt-mcq>\n  <oelt-text-entry id=\"q2\" answer=\"cmi5\" weight=\"2\">\n    <p slot=\"prompt\">Name that standard (one word).</p>\n  </oelt-text-entry>\n</oelt-quiz>",
+      "spec": "quiz.md",
+      "readmeSlug": "quiz"
+    },
+    {
+      "name": "oelt-likert",
+      "elements": ["oelt-likert"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "rating-scale / survey item",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<!-- explicit labels (recommended) -->\n<oelt-likert id=\"confidence\">\n  <p slot=\"prompt\">I feel confident applying what I learned.</p>\n  <oelt-option value=\"1\">Strongly disagree</oelt-option>\n  <oelt-option value=\"3\">Neutral</oelt-option>\n  <oelt-option value=\"5\">Strongly agree</oelt-option>\n</oelt-likert>\n\n<!-- generated N-point scale with end anchors -->\n<oelt-likert id=\"ease\" scale=\"5\" low-label=\"Very hard\" high-label=\"Very easy\">\n  <p slot=\"prompt\">How easy was this lesson?</p>\n</oelt-likert>",
+      "spec": "likert.md",
+      "readmeSlug": "likert"
+    },
+    {
+      "name": "oelt-ordering",
+      "elements": ["oelt-ordering"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "sequence / ranking",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<oelt-ordering id=\"lifecycle\">\n  <p slot=\"prompt\">Put the steps in order, first to last.</p>\n  <oelt-item value=\"plan\">Plan</oelt-item>\n  <oelt-item value=\"build\">Build</oelt-item>\n  <oelt-item value=\"test\">Test</oelt-item>\n  <oelt-item value=\"ship\">Ship</oelt-item>\n</oelt-ordering>",
+      "spec": "dnd-family.md",
+      "readmeSlug": "dnd-family"
+    },
+    {
+      "name": "oelt-matching",
+      "elements": ["oelt-matching"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "match values to prompts",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<oelt-matching id=\"capitals\">\n  <p slot=\"prompt\">Match each country to its capital.</p>\n  <oelt-pair prompt=\"France\" value=\"paris\">Paris</oelt-pair>\n  <oelt-pair prompt=\"Japan\" value=\"tokyo\">Tokyo</oelt-pair>\n  <oelt-pair prompt=\"Egypt\" value=\"cairo\">Cairo</oelt-pair>\n</oelt-matching>",
+      "spec": "matching.md",
+      "readmeSlug": "matching"
+    },
+    {
+      "name": "oelt-categorize",
+      "elements": ["oelt-categorize"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "sort items into categories",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<oelt-categorize id=\"animals\">\n  <p slot=\"prompt\">Sort each animal into its group.</p>\n  <oelt-bucket value=\"mammals\">Mammals</oelt-bucket>\n  <oelt-bucket value=\"birds\">Birds</oelt-bucket>\n  <oelt-token bucket=\"mammals\" value=\"dog\">Dog</oelt-token>\n  <oelt-token bucket=\"birds\" value=\"eagle\">Eagle</oelt-token>\n  <oelt-token bucket=\"mammals\" value=\"cat\">Cat</oelt-token>\n</oelt-categorize>",
+      "spec": "categorize.md",
+      "readmeSlug": "categorize"
+    },
+    {
+      "name": "oelt-tabs",
+      "elements": ["oelt-tabs", "oelt-accordion", "oelt-flip-cards"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "Accessible content-organizing widgets.",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<oelt-tabs id=\"topics\">\n  <oelt-tab label=\"Overview\"><p>…</p></oelt-tab>\n  <oelt-tab label=\"Details\"><p>…</p></oelt-tab>\n</oelt-tabs>\n\n<oelt-accordion single>\n  <!-- `single` = one section open at a time -->\n  <oelt-panel label=\"What is SCORM?\"><p>…</p></oelt-panel>\n  <oelt-panel label=\"What is cmi5?\"><p>…</p></oelt-panel>\n</oelt-accordion>\n\n<oelt-flip-cards>\n  <oelt-card front=\"Mercury\"><p>Closest planet to the Sun.</p></oelt-card>\n  <oelt-card front=\"Venus\"><p>Hottest planet.</p></oelt-card>\n</oelt-flip-cards>",
+      "spec": "presentation.md",
+      "readmeSlug": "presentation"
+    },
+    {
+      "name": "oelt-hotspot",
+      "elements": ["oelt-hotspot"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "image hotspot selection",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<oelt-hotspot id=\"cell\" mode=\"multiple\" src=\"images/cell.svg\" alt=\"Diagram of an animal cell\">\n  <p slot=\"prompt\">Select every structure that stores genetic material.</p>\n  <oelt-area value=\"nucleus\" x=\"10\" y=\"18\" w=\"26\" h=\"30\" label=\"Nucleus\" correct></oelt-area>\n  <oelt-area value=\"mito\" x=\"55\" y=\"50\" w=\"22\" h=\"20\" label=\"Mitochondria\"></oelt-area>\n  <oelt-area value=\"dna\" x=\"16\" y=\"24\" w=\"10\" h=\"10\" label=\"DNA\" correct></oelt-area>\n</oelt-hotspot>",
+      "spec": "hotspot.md",
+      "readmeSlug": "hotspot"
+    },
+    {
+      "name": "oelt-reflection",
+      "elements": ["oelt-reflection"],
+      "status": "beta",
+      "statusNote": "pending manual NVDA/VoiceOver passes",
+      "description": "free-text reflection",
+      "a11y": "Light DOM, fully keyboard-operable, visible focus, screen-reader documented in its spec, axe-clean, honors prefers-reduced-motion.",
+      "example": "<oelt-reflection id=\"takeaway\" maxlength=\"500\">\n  <p slot=\"prompt\">What is one thing you will apply from this lesson?</p>\n</oelt-reflection>",
+      "spec": "reflection.md",
+      "readmeSlug": "reflection"
+    }
+  ]
+}

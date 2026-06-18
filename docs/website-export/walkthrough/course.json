@@ -1,0 +1,26 @@
+{
+  "oelt": "0.1",
+  "id": "org.oeltkit.walkthrough",
+  "title": "Spotting Phishing Emails",
+  "lang": "en",
+  "targets": ["scorm12", "cmi5", "web"],
+  "tracking": {
+    "completion": { "rule": "required-interactions-passed" },
+    "score": { "rule": "single-interaction", "source": "q1", "mastery": 0.8 }
+  },
+  "structure": [
+    {
+      "id": "m1",
+      "title": "Spotting Phishing Emails",
+      "pages": [
+        { "id": "intro", "title": "Why phishing works", "src": "pages/intro.html" },
+        {
+          "id": "check",
+          "title": "Knowledge check",
+          "src": "pages/check.html",
+          "interactions": [{ "id": "q1", "type": "choice", "weight": 1, "required": true }]
+        }
+      ]
+    }
+  ]
+}

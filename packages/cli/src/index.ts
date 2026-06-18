@@ -18,6 +18,7 @@ import { loadCourse, validateCourse, type Finding } from "./lib/course.js";
 import { buildPackage, writePackage, type Target } from "./lib/generators.js";
 import { repoRoot } from "./lib/paths.js";
 import { exportCourse, importCourse, isOeltCourse } from "./lib/course-file.js";
+import { helpText } from "./lib/commands.js";
 
 const TARGETS: Target[] = ["scorm12", "scorm2004", "cmi5", "web"];
 
@@ -183,15 +184,7 @@ async function main(): Promise<number> {
   const { _, flags } = parseArgs(process.argv.slice(2));
   const [command, arg1, arg2] = _;
   if (!command || command === "help" || flags.help) {
-    console.log(
-      "oelt <command>\n" +
-        "  new <dir> [--title]\n" +
-        "  validate <dir|file.oeltcourse> [--json]\n" +
-        "  package <dir|file.oeltcourse> --target scorm12|scorm2004|cmi5|web [--out]\n" +
-        "  preview <dir|file.oeltcourse> [--port]\n" +
-        "  export <dir> [--out file.oeltcourse]\n" +
-        "  import <file.oeltcourse> <dir>",
-    );
+    console.log(helpText());
     return command ? 0 : 1;
   }
   if (!arg1 && command !== "help") throw new Error(`${command}: missing argument`);

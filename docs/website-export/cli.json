@@ -1,0 +1,123 @@
+{
+  "generated": "scripts/website-export/generate.mjs",
+  "binary": "oelt",
+  "commands": [
+    {
+      "verb": "new",
+      "usage": "new <dir> [--title]",
+      "summary": "Scaffold a new course (course.json + a starter page).",
+      "args": [
+        {
+          "name": "dir",
+          "doc": "Directory to create the course in."
+        }
+      ],
+      "flags": [
+        {
+          "name": "title",
+          "value": "string",
+          "required": false,
+          "doc": "Course title (default \"Untitled Course\")."
+        }
+      ]
+    },
+    {
+      "verb": "validate",
+      "usage": "validate <dir|file.oeltcourse> [--json]",
+      "summary": "Validate a course: schema, id uniqueness, declared interactions exist, media a11y, and tracking reachability.",
+      "args": [
+        {
+          "name": "dir|file.oeltcourse",
+          "doc": "Course directory or a .oeltcourse file."
+        }
+      ],
+      "flags": [
+        {
+          "name": "json",
+          "value": null,
+          "required": false,
+          "doc": "Emit machine-readable findings (see validator-output.md)."
+        }
+      ]
+    },
+    {
+      "verb": "package",
+      "usage": "package <dir|file.oeltcourse> --target scorm12|scorm2004|cmi5|web [--out]",
+      "summary": "Build a self-contained package for one delivery target. Refuses to build if validation has errors.",
+      "args": [
+        {
+          "name": "dir|file.oeltcourse",
+          "doc": "Course directory or a .oeltcourse file."
+        }
+      ],
+      "flags": [
+        {
+          "name": "target",
+          "value": "scorm12|scorm2004|cmi5|web",
+          "required": true,
+          "doc": "Delivery target. scorm12, cmi5, and web are verified real-LMS-conformant; scorm2004 packages but prints a known-limitation notice (completion rollup unverified — OQ-004)."
+        },
+        {
+          "name": "out",
+          "value": "file.zip",
+          "required": false,
+          "doc": "Output path (default <course-id>-<target>.zip)."
+        }
+      ]
+    },
+    {
+      "verb": "preview",
+      "usage": "preview <dir|file.oeltcourse> [--port]",
+      "summary": "Serve the course in the local fake-LMS harness with a live tracking panel.",
+      "args": [
+        {
+          "name": "dir|file.oeltcourse",
+          "doc": "Course directory or a .oeltcourse file."
+        }
+      ],
+      "flags": [
+        {
+          "name": "port",
+          "value": "N",
+          "required": false,
+          "doc": "Port to serve on."
+        }
+      ]
+    },
+    {
+      "verb": "export",
+      "usage": "export <dir> [--out file.oeltcourse]",
+      "summary": "Pack a course directory into a single transportable .oeltcourse file.",
+      "args": [
+        {
+          "name": "dir",
+          "doc": "Course directory."
+        }
+      ],
+      "flags": [
+        {
+          "name": "out",
+          "value": "file.oeltcourse",
+          "required": false,
+          "doc": "Output path (default <dir>.oeltcourse)."
+        }
+      ]
+    },
+    {
+      "verb": "import",
+      "usage": "import <file.oeltcourse> <dir>",
+      "summary": "Extract a .oeltcourse file into a directory.",
+      "args": [
+        {
+          "name": "file.oeltcourse",
+          "doc": "The .oeltcourse file to extract."
+        },
+        {
+          "name": "dir",
+          "doc": "Destination directory (must be empty)."
+        }
+      ],
+      "flags": []
+    }
+  ]
+}
