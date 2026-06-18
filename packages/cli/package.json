@@ -1,8 +1,11 @@
 {
   "name": "@oeltkit/cli",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "OELT command-line interface — package, preview, validate, and scaffold courses.",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "bin": {
     "oelt": "./dist/esm/index.js"

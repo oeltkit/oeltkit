@@ -1,8 +1,11 @@
 {
   "name": "@oeltkit/mcp",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "OELT MCP server — wraps the CLI and filesystem operations as tools for LLM authoring clients.",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "bin": {
     "oelt-mcp": "./dist/esm/index.js"
@@ -20,6 +23,6 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.6.1",
-    "@oeltkit/cli": "*"
+    "@oeltkit/cli": "^0.1.0"
   }
 }

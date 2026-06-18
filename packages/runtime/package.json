@@ -1,8 +1,11 @@
 {
   "name": "@oeltkit/runtime",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "OELT runtime core — tracking, state, navigation, and accessibility services. Bundled into every course.",
   "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/esm/index.js",
   "module": "./dist/esm/index.js",
