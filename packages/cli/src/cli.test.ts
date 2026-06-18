@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, writeFileSync, rmSync, readdirSync, readFileSyn
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import JSZip from "jszip";
-import { scorm12Manifest, cmi5Xml } from "./lib/generators.js";
+import { scorm12Manifest, scorm2004Manifest, cmi5Xml } from "./lib/generators.js";
 import { validateCourse, type CourseManifest, type LoadedCourse } from "./lib/course.js";
 import { exportCourse, importCourse, isSafePath } from "./lib/course-file.js";
 
@@ -23,6 +23,15 @@ describe("manifest generation", () => {
     expect(xml).toContain('adlcp:scormtype="sco"');
     expect(xml).toContain("<schemaversion>1.2</schemaversion>");
     expect(xml).toContain("Test &amp; &lt;Course&gt;"); // escaped
+  });
+
+  it("scorm2004: declares content-set completion + objective so status rolls up", () => {
+    // Without imsss:deliveryControls, SCORM 2004 lets sequencing/the LMS decide
+    // status and ignores what the SCO reports → registration stays UNKNOWN on a
+    // real LMS even though the SCO reported completed/passed (Task 10 / OQ-004).
+    const xml = scorm2004Manifest(base());
+    expect(xml).toContain('completionSetByContent="true"');
+    expect(xml).toContain('objectiveSetByContent="true"');
   });
 
   it("cmi5: moveOn + masteryScore derive from the tracking rules", () => {

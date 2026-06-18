@@ -54,7 +54,15 @@ export function scorm2004Manifest(c: CourseManifest): string {
   <metadata><schema>ADL SCORM</schema><schemaversion>2004 4th Edition</schemaversion></metadata>
   <organizations default="ORG">
     <organization identifier="ORG"><title>${t}</title>
-      <item identifier="ITEM-1" identifierref="RES-1"><title>${t}</title></item>
+      <item identifier="ITEM-1" identifierref="RES-1"><title>${t}</title>
+        <imsss:sequencing>
+          <!-- Tell the LMS the SCO sets its OWN completion + objective (success)
+               status. Without this, SCORM 2004's default is that sequencing/the
+               LMS decides, so a SCO that reports completed/passed still rolls up
+               as UNKNOWN (verified on SCORM Cloud, Task 10 / OQ-004). -->
+          <imsss:deliveryControls completionSetByContent="true" objectiveSetByContent="true"/>
+        </imsss:sequencing>
+      </item>
     </organization>
   </organizations>
   <resources>

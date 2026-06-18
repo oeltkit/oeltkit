@@ -33,8 +33,13 @@ interface LaunchData {
 
 function readLaunchParams(): LaunchParams {
   const q = new URLSearchParams(window.location.search);
+  // The endpoint is concatenated with "activities/state" / "statements", so it
+  // MUST end with "/". Real LMSs (e.g. SCORM Cloud) supply it without a trailing
+  // slash, which otherwise yields "…/lrsactivities/state" → 404 → start() throws
+  // → the AU never renders (Task 10 / OQ-004).
+  const rawEndpoint = q.get("endpoint") ?? "";
   return {
-    endpoint: q.get("endpoint") ?? "",
+    endpoint: rawEndpoint && !rawEndpoint.endsWith("/") ? `${rawEndpoint}/` : rawEndpoint,
     fetchUrl: q.get("fetch") ?? "",
     actor: q.get("actor") ? JSON.parse(q.get("actor")!) : null,
     registration: q.get("registration") ?? "",
@@ -105,9 +110,14 @@ export function createCmi5Adapter(emit: Emit): Adapter {
       const r = await fetch(p.fetchUrl, { method: "POST" });
       token = (await r.json())["auth-token"];
       emit({ type: "info", message: "cmi5 auth-token received" });
-      // §10.2 — read LMS.LaunchData.
-      const ld = await fetch(stateUrl("LMS.LaunchData"), { headers: auth() });
-      launchData = await ld.json();
+      // §10.2 — read LMS.LaunchData. Tolerate a miss: a malformed/empty response
+      // must not reject start() (which would block the AU from ever rendering).
+      try {
+        const ld = await fetch(stateUrl("LMS.LaunchData"), { headers: auth() });
+        if (ld.ok) launchData = await ld.json();
+      } catch {
+        /* no launch data — proceed with defaults */
+      }
       emit({
         type: "info",
         message: `LMS.LaunchData launchMode=${launchData.launchMode} moveOn=${launchData.moveOn}`,
