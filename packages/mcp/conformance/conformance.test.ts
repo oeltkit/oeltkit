@@ -23,8 +23,14 @@ let coursesDir: string;
 let client: MCPClient;
 
 beforeAll(() => {
-  // Build cli + mcp so the stdio server is runnable (mirrors playwright globalSetup).
-  execSync("npm run build -w @oeltkit/cli -w @oeltkit/mcp", { cwd: REPO_ROOT, stdio: "inherit" });
+  // Build the runnable stdio server (cli + mcp) AND the runtime + components
+  // bundles the packager embeds — the conformance session packages a course, and
+  // `npm test` runs before `npm run build` in CI, so the bundles won't exist yet
+  // unless we build them here (mirrors playwright globalSetup; self-contained).
+  execSync(
+    "npm run build -w @oeltkit/runtime -w @oeltkit/components -w @oeltkit/cli -w @oeltkit/mcp",
+    { cwd: REPO_ROOT, stdio: "inherit" },
+  );
 
   coursesDir = mkdtempSync(join(tmpdir(), "oelt-mcp-conf-"));
   client = stdioClient("node", [SERVER], {
