@@ -18,6 +18,16 @@ export function createCmi5Adapter(emit: Emit): Adapter {
   let locationCache = "";
   const sent = new Set<string>(); // cmi5 send-once verbs
 
+  // Serialize statement sends so they reach the LRS IN ORDER. cmi5 requires
+  // completed before passed/failed before terminated; firing them concurrently
+  // lets an out-of-order `passed` get dropped (SCORM Cloud, OQ-004 — the pass
+  // scenario, which sends completed+passed, failed while the single-statement
+  // fail scenario succeeded).
+  let chain: Promise<unknown> = Promise.resolve();
+  const enqueue = (fn: () => Promise<unknown>): void => {
+    chain = chain.then(fn).catch(() => {});
+  };
+
   const stateParams = (stateId: string) => ({
     agent: lp.actor,
     activityId: lp.activityId,
@@ -77,13 +87,13 @@ export function createCmi5Adapter(emit: Emit): Adapter {
       // cmi5 send-once, in order: completed → passed/failed (§9.3.3–9.3.5).
       if (o.completion && !sent.has("completed")) {
         sent.add("completed");
-        void cmi5.complete();
+        enqueue(() => cmi5.complete());
         emit({ type: "statement", verb: "completed", scaled: o.score ?? null });
       }
       if (o.success && !sent.has(o.success)) {
+        const score = o.score ?? undefined;
         sent.add(o.success);
-        if (o.success === "passed") void cmi5.pass(o.score ?? undefined);
-        else void cmi5.fail(o.score ?? undefined);
+        enqueue(() => (o.success === "passed" ? cmi5.pass(score) : cmi5.fail(score)));
         emit({ type: "statement", verb: o.success, scaled: o.score ?? null });
       }
     },
@@ -102,7 +112,7 @@ export function createCmi5Adapter(emit: Emit): Adapter {
     terminate() {
       if (sent.has("terminated")) return;
       sent.add("terminated");
-      void cmi5.terminate(); // §9.3.8 — MUST be last
+      enqueue(() => cmi5.terminate()); // §9.3.8 — MUST be last
       emit({ type: "lifecycle", op: "terminate", adapter: "cmi5" });
       emit({ type: "statement", verb: "terminated", scaled: null });
     },
