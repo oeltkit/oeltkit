@@ -86,6 +86,8 @@ Consequences:
 
 On SCORM 2004 and cmi5 no collapse happens: completion and success are reported on their own channels (`completion_status` + `success_status`; `completed` then `passed`/`failed` statements).
 
+> **SCORM 2004 known limitation (OQ-004, accepted 2026-06-18):** the runtime writes these RTE values correctly and the LMS accepts them, but completion/success do not reliably **roll up** to the registration on a real LMS (verified on SCORM Cloud). SCORM 1.2 + cmi5 + web are the verified-conformant targets; SCORM 2004 export stays available but its completion reporting is not yet guaranteed. Authoring tools should prefer SCORM 1.2 or cmi5 when tracking must be guaranteed.
+
 ## 5. Score semantics
 
 | Rule                            | Score is…                                                 |

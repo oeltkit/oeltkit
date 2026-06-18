@@ -78,7 +78,14 @@ Rules:
 - `id`: reverse-DNS, lowercase, e.g. `com.example.course-name`. All module/page/interaction ids
   must be unique across the whole course and be valid HTML id tokens (`^[A-Za-z][A-Za-z0-9_-]*$`).
 - `lang`: BCP-47 (required — drives the document language for accessibility).
-- `targets`: any non-empty subset of `scorm12`, `scorm2004`, `cmi5`, `web`.
+- `targets`: any non-empty subset of `scorm12`, `scorm2004`, `cmi5`, `web`. **Recommended:**
+  `scorm12`, `cmi5`, and `web` are verified real-LMS-conformant — prefer these. **`scorm2004` is a
+  known limitation:** the package imports and the runtime writes correct RTE values, but completion
+  does not reliably roll up to the registration on a real LMS (OQ-004). Use SCORM 1.2 or cmi5 when
+  guaranteed tracking matters; only include `scorm2004` when an author explicitly asks for it, and
+  never claim its completion tracking is verified. `oelt validate` emits a non-blocking
+  `scorm2004-rollup` warning whenever it is targeted, and `oelt package --target scorm2004` prints
+  the same caveat.
 - `tracking` is optional. Omit it for the zero-config default: complete when all pages are viewed,
   no score. Each interaction's `id` MUST match the `id` of an element in that page's HTML.
 - Unknown keys are rejected — no typos.

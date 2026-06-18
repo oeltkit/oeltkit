@@ -1,22 +1,22 @@
 # SIMPLICITY.md — The Non-Technical Author Path
 
-*Companion to PLAN.md and COMPANION-SERVICES.md. Goal: an instructional designer who has never opened a terminal authors, previews, and ships an LMS-ready course entirely from Claude Desktop (or similar).*
+_Companion to PLAN.md and COMPANION-SERVICES.md. Goal: an instructional designer who has never opened a terminal authors, previews, and ships an LMS-ready course entirely from Claude Desktop (or similar)._
 
 ## Persona & principle
 
 **Persona:** working ID, comfortable in Claude/ChatGPT, lives in PowerPoint/Word/their LMS's admin screen. Has never used npm, git, or a CLI, and shouldn't have to learn.
 
-**Principle:** *the conversation is the interface, and a course is a file.* The ID never sees: terminal, repo, npm, JSON, file paths, the words "scaffold" or "manifest." Every technical question has a default; every error arrives as a plain-language fix offer.
+**Principle:** _the conversation is the interface, and a course is a file._ The ID never sees: terminal, repo, npm, JSON, file paths, the words "scaffold" or "manifest." Every technical question has a default; every error arrives as a plain-language fix offer.
 
 ## 1. Three delivery vehicles, one tool surface
 
 Same `@oeltkit/mcp` server, packaged three ways:
 
-| Vehicle | Install effort | Where courses live | Who it's for |
-|---|---|---|---|
-| **Desktop extension (`.mcpb`)** | Download, double-click | `~/Documents/OELTKit Courses/` (managed by the server; ID never navigates it — see §2) | Privacy-conscious orgs, offline, free forever |
-| **Hosted remote connector** ("oeltkit cloud free tier") | Zero — add from Claude's connector settings | Server-side workspace | The mass on-ramp; preview URLs, sharing, service upsell |
-| **Cowork / Claude Code (today's path)** | Technical | Local repo | Developers, power users, agencies |
+| Vehicle                                                 | Install effort                              | Where courses live                                                                     | Who it's for                                            |
+| ------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **Desktop extension (`.mcpb`)**                         | Download, double-click                      | `~/Documents/OELTKit Courses/` (managed by the server; ID never navigates it — see §2) | Privacy-conscious orgs, offline, free forever           |
+| **Hosted remote connector** ("oeltkit cloud free tier") | Zero — add from Claude's connector settings | Server-side workspace                                                                  | The mass on-ramp; preview URLs, sharing, service upsell |
+| **Cowork / Claude Code (today's path)**                 | Technical                                   | Local repo                                                                             | Developers, power users, agencies                       |
 
 Notes:
 
@@ -39,12 +39,12 @@ This dissolves "where is my project?", folder management, and the local/hosted m
 
 The developer surface (`scaffold/validate/package`) stays for agents. The ID-facing layer — primarily the published skill, plus tool descriptions — speaks workflow:
 
-| ID says | What happens underneath |
-|---|---|
-| "Start a course on X" | scaffold with defaults: targets `scorm12+web`, default theme, sensible tracking |
-| "Show me" / "let me try it" | preview: hosted URL (cloud) or double-clickable file (local — see §5) |
-| "Make the file I upload to my LMS" | validate → fix loop → package → `.zip` + per-LMS upload instructions |
-| "Here's last year's course, update the policy section" | accepts `.oeltcourse`, edits, re-validates |
+| ID says                                                | What happens underneath                                                         |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------- |
+| "Start a course on X"                                  | scaffold with defaults: targets `scorm12+web`, default theme, sensible tracking |
+| "Show me" / "let me try it"                            | preview: hosted URL (cloud) or double-clickable file (local — see §5)           |
+| "Make the file I upload to my LMS"                     | validate → fix loop → package → `.zip` + per-LMS upload instructions            |
+| "Here's last year's course, update the policy section" | accepts `.oeltcourse`, edits, re-validates                                      |
 
 Conversation rules encoded in the skill:
 
@@ -75,13 +75,13 @@ Same recipes ship as installable skills. Plus **per-LMS upload guides** (Moodle,
 
 ## 6. Roadmap changes
 
-| Item | Lands in |
-|---|---|
-| `file://` requirement + `.oeltcourse` spec | **Phase 1** (spec work, cheap now / expensive later) |
-| `.mcpb` packaging of `@oeltkit/mcp` + Connectors Directory submission | **Phase 2** |
-| Skill conversation rules (§3) + recipes v1 + per-LMS guides | **Phase 2** |
-| Hosted connector (oeltkit cloud free tier) | **First cloud deliverable** — re-sequenced ahead of Tier 1 media services in COMPANION-SERVICES.md |
-| "Test in a real LMS" tool | With cloud Tier 4 verification farm |
+| Item                                                                  | Lands in                                                                                           |
+| --------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `file://` requirement + `.oeltcourse` spec                            | **Phase 1** (spec work, cheap now / expensive later)                                               |
+| `.mcpb` packaging of `@oeltkit/mcp` + Connectors Directory submission | **Phase 2**                                                                                        |
+| Skill conversation rules (§3) + recipes v1 + per-LMS guides           | **Phase 2**                                                                                        |
+| Hosted connector (oeltkit cloud free tier)                            | **First cloud deliverable** — re-sequenced ahead of Tier 1 media services in COMPANION-SERVICES.md |
+| "Test in a real LMS" tool                                             | With cloud Tier 4 verification farm                                                                |
 
 ## 7. Success metric for this track
 

@@ -47,17 +47,33 @@ Findings array contract: `oelt validate --json` emits:
 
 ## 3. Rule code registry
 
-| Code                      | Level | Trigger                                                        | Example `message_human`                                                                                                                                                                          |
-| ------------------------- | ----- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `schema`                  | error | JSON Schema violation                                          | "The manifest has a structural error: `{instancePath}` {message}."                                                                                                                               |
-| `id-unique`               | error | Duplicate id across course                                     | "The id \"m1\" is used more than once — every id in the course must be unique; rename one of the duplicates."                                                                                    |
-| `page-missing`            | error | `src` file not found                                           | "Page \"Welcome\" references a file that doesn't exist (`pages/p1.html`) — create the file or fix the path in course.json."                                                                      |
-| `interaction-missing`     | error | Declared interaction absent from page HTML                     | "Page \"Final quiz\" declares an interaction \"q1\" but no element with that id was found in pages/quiz.html — add `id=\"q1\"` to the element."                                                  |
-| `media-no-alt`            | error | `<oelt-media>` without captions or transcript                  | "Page \"Introduction video\" has a media element without captions or a transcript — add a `<track kind=\"captions\">` or a `<div slot=\"transcript\">` element."                                 |
-| `no-required-interaction` | error | Completion rule needs `required` interaction but none declared | "The completion rule `{rule}` requires at least one interaction marked `required: true`, but none are declared — set `\"required\": true` on at least one interaction."                          |
-| `score-source`            | error | `single-interaction` score names missing interaction           | "The score rule `single-interaction` names \"{source}\" as its source, but no interaction with that id is declared — add an interaction with `\"id\": \"{source}\"` or change the score source." |
+| Code                      | Level   | Trigger                                                        | Example `message_human`                                                                                                                                                                                                                                                  |
+| ------------------------- | ------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `schema`                  | error   | JSON Schema violation                                          | "The manifest has a structural error: `{instancePath}` {message}."                                                                                                                                                                                                       |
+| `id-unique`               | error   | Duplicate id across course                                     | "The id \"m1\" is used more than once — every id in the course must be unique; rename one of the duplicates."                                                                                                                                                            |
+| `page-missing`            | error   | `src` file not found                                           | "Page \"Welcome\" references a file that doesn't exist (`pages/p1.html`) — create the file or fix the path in course.json."                                                                                                                                              |
+| `interaction-missing`     | error   | Declared interaction absent from page HTML                     | "Page \"Final quiz\" declares an interaction \"q1\" but no element with that id was found in pages/quiz.html — add `id=\"q1\"` to the element."                                                                                                                          |
+| `media-no-alt`            | error   | `<oelt-media>` without captions or transcript                  | "Page \"Introduction video\" has a media element without captions or a transcript — add a `<track kind=\"captions\">` or a `<div slot=\"transcript\">` element."                                                                                                         |
+| `no-required-interaction` | error   | Completion rule needs `required` interaction but none declared | "The completion rule `{rule}` requires at least one interaction marked `required: true`, but none are declared — set `\"required\": true` on at least one interaction."                                                                                                  |
+| `score-source`            | error   | `single-interaction` score names missing interaction           | "The score rule `single-interaction` names \"{source}\" as its source, but no interaction with that id is declared — add an interaction with `\"id\": \"{source}\"` or change the score source."                                                                         |
+| `scorm2004-rollup`        | warning | Course `targets` include `scorm2004`                           | "This course targets SCORM 2004, whose completion/success reporting is a known limitation — it is not yet verified to roll up on every LMS. Use SCORM 1.2 or cmi5 when guaranteed tracking matters; SCORM 2004 packaging still works for authors who knowingly want it." |
 
-## 4. Stability guarantee
+## 4. Known-limitation notices (non-blocking)
+
+Some findings are not defects in the authored course but honest caveats about a delivery target.
+They are emitted at `level: "warning"` so they surface to the author without blocking packaging.
+
+- **`scorm2004-rollup`** — emitted by `oelt validate` whenever `targets` includes `scorm2004`.
+  SCORM 2004 _packaging_ works and the runtime writes correct RTE values, **but** completion/success
+  do not reliably roll up to the registration on a real LMS (OQ-004; verified on SCORM Cloud via
+  Task 10). The `message_human` steers authors to the verified targets (SCORM 1.2, cmi5).
+
+`oelt package --target scorm2004` additionally prints the same caveat to **stderr** as a `notice:`
+line _after_ a successful package — packaging is never refused over this. The notice text mirrors
+the `scorm2004-rollup` warning. This is the only target-conditional packaging notice; do not extend
+it to a validation error.
+
+## 5. Stability guarantee
 
 `code` values are stable once shipped. They MUST NOT be renamed or removed in a MINOR version
 bump. Adding new codes is a MINOR change. Removing or renaming a code is a MAJOR change.

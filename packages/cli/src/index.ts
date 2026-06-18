@@ -21,6 +21,15 @@ import { exportCourse, importCourse, isOeltCourse } from "./lib/course-file.js";
 
 const TARGETS: Target[] = ["scorm12", "scorm2004", "cmi5", "web"];
 
+/**
+ * Non-blocking caveat printed to stderr when packaging SCORM 2004. Completion
+ * rollup is an accepted known limitation (OQ-004) — packaging still succeeds.
+ * Mirrors the validator's `scorm2004-rollup` warning. Do not turn this into an
+ * error; 2004 export stays available for authors who knowingly want it.
+ */
+const SCORM2004_ROLLUP_NOTICE =
+  "SCORM 2004: completion rollup is a known limitation (not verified on all LMSes); prefer scorm12 or cmi5 for reliable tracking.";
+
 interface Args {
   _: string[];
   flags: Record<string, string | boolean>;
@@ -130,6 +139,7 @@ async function cmdPackage(input: string, flags: Args["flags"]): Promise<number> 
     const out = typeof flags.out === "string" ? flags.out : `${loaded.course.id}-${target}.zip`;
     writePackage(bytes, out);
     console.log(`Packaged ${target} → ${out} (${(bytes.length / 1024).toFixed(0)} KB)`);
+    if (target === "scorm2004") console.error(`notice: ${SCORM2004_ROLLUP_NOTICE}`);
     return 0;
   } finally {
     await cleanup?.();

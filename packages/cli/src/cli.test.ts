@@ -190,6 +190,26 @@ describe("validateCourse cross-checks", () => {
     expect(finding.message_human).toContain("nonexistent-id");
   });
 
+  it("warns (non-blocking) when targets include scorm2004 — known rollup limitation (OQ-004)", () => {
+    const c = base({
+      targets: ["scorm12", "scorm2004", "cmi5", "web"],
+      structure: [
+        { id: "m1", title: "M1", pages: [{ id: "p1", title: "P1", src: "pages/good.html" }] },
+      ],
+    });
+    const findings = validateCourse(load(c));
+    const rollup = findings.find((f) => f.code === "scorm2004-rollup");
+    expect(rollup).toBeDefined();
+    expect(rollup!.level).toBe("warning"); // never blocks packaging
+    expect(rollup!.message_human).toContain("SCORM 1.2 or cmi5");
+    // No scorm2004 target ⇒ no warning.
+    expect(
+      validateCourse(load(base({ targets: ["scorm12", "web"] }))).some(
+        (f) => f.code === "scorm2004-rollup",
+      ),
+    ).toBe(false);
+  });
+
   it("every finding has a non-empty message_human (page-missing rule)", () => {
     const c = base({
       structure: [

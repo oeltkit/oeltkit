@@ -87,6 +87,12 @@ Two equally-weighted questions, both required and passed → 100% ≥ 80% master
 1.2 the single status field will report `passed`; on SCORM 2004/cmi5, completion and success are
 reported separately. The runtime handles the mapping.)
 
+> **Which targets to rely on.** `scorm12`, `cmi5`, and `web` are verified real-LMS-conformant — use
+> them when guaranteed tracking matters. `scorm2004` export is available and standards-shaped, but
+> its **completion reporting is a known limitation** — it does not yet reliably roll up to the
+> registration on every LMS (see OQ-004). `oelt validate` will warn (non-blocking) when you target
+> it. Prefer SCORM 1.2 or cmi5; reach for SCORM 2004 only if your LMS specifically requires it.
+
 ## 3. Author the pages
 
 Pages are free HTML fragments. Keep one `<h1>` per page and use components for interactions.
@@ -154,7 +160,9 @@ oelt package privacy-basics --target scorm12
 ```
 
 Upload the zip to your LMS (or [SCORM Cloud](https://cloud.scorm.com) to verify). The same source
-packages for `scorm2004`, `cmi5`, and `web` with no content changes.
+packages for `cmi5` and `web` with no content changes — and for `scorm2004` if you need it, though
+`oelt package --target scorm2004` prints a notice that its completion rollup is a known limitation
+(prefer `scorm12` or `cmi5` for guaranteed tracking; see the note in §2).
 
 ## What you did not have to do
 

@@ -92,6 +92,21 @@ export function validateCourse({ dir, course }: LoadedCourse): Finding[] {
   // If the manifest isn't even schema-valid, structural walks below may throw.
   if (findings.length) return findings;
 
+  // SCORM 2004 completion rollup is an accepted known limitation (OQ-004): the
+  // runtime writes correct RTE values but they do not reliably roll up to the
+  // registration on a real LMS. Non-blocking warning so authoring tools steer
+  // toward the verified targets — packaging 2004 is never refused over this.
+  if (course.targets.includes("scorm2004")) {
+    findings.push({
+      level: "warning",
+      code: "scorm2004-rollup",
+      message:
+        "target scorm2004: completion rollup is a known limitation (not verified on all LMSes)",
+      message_human:
+        "This course targets SCORM 2004, whose completion/success reporting is a known limitation — it is not yet verified to roll up on every LMS. Use SCORM 1.2 or cmi5 when guaranteed tracking matters; SCORM 2004 packaging still works for authors who knowingly want it.",
+    });
+  }
+
   // Build flat page + interaction lists once.
   const pages = course.structure.flatMap((m) => m.pages);
   const interactions = pages.flatMap((p) => (p.interactions ?? []).map((i) => ({ ...i, page: p })));
