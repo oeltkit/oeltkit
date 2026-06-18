@@ -204,6 +204,7 @@ async function driveOnCloud(
   const launcher = await context.newPage();
   let target = launcher; // the page hosting the course (popup or launcher)
   let detectedTarget = null; // window.oelt.target as the runtime auto-detected it
+  let lmsModel = null; // live LMS data model read back before terminate
   let problems = [];
   let saveTrace = false;
   try {
@@ -215,6 +216,9 @@ async function driveOnCloud(
     // SCORM API discovery failed and tracking silently went to localStorage.
     detectedTarget = await frame.evaluate(() => window.oelt?.target).catch(() => null);
     await scenario.drive(ctx);
+    // Read the live LMS data model BEFORE terminate to see whether the adapter's
+    // writes actually landed (vs. silent RTE rejection). Captured into artifacts.
+    lmsModel = await ctx.readLmsModel();
     await ctx.terminate();
     await sleep(1500); // let the final LMSCommit/Terminate flush to the LMS
 
@@ -261,6 +265,7 @@ async function driveOnCloud(
         problems,
         detectedTarget,
         consoleLog,
+        lmsModel,
       });
     }
   } catch (err) {
@@ -273,6 +278,7 @@ async function driveOnCloud(
         problems,
         detectedTarget,
         consoleLog,
+        lmsModel,
       });
     } catch (e2) {
       log(`  (failed to write artifacts: ${e2.message})`);
@@ -301,13 +307,13 @@ async function writeFailureArtifacts(
   scenario,
   artifactsDir,
   label,
-  { page, example, problems, detectedTarget = null, consoleLog = [] },
+  { page, example, problems, detectedTarget = null, consoleLog = [], lmsModel = null },
 ) {
   mkdirSync(artifactsDir, { recursive: true });
   // diag: the adapter the runtime auto-detected on the LMS + browser console.
   // A detectedTarget of "web" (when an LMS target was expected) means SCORM API
   // discovery failed and tracking silently went to localStorage instead.
-  const diag = { problems, detectedTarget, consoleLog };
+  const diag = { problems, detectedTarget, lmsModel, consoleLog };
   try {
     const reg = await client.getRegistration(registrationId, {
       includeChildResults: true,

@@ -116,6 +116,52 @@ export function makeContext(page, frame) {
     terminate() {
       return frame.evaluate(() => window.oelt?.terminate?.());
     },
+
+    /**
+     * Diagnostic: re-discover the LMS-provided SCORM API the same way the runtime
+     * does and read back the live data model + last error. Reveals whether the
+     * adapter's writes actually landed in the LMS RTE (vs. being silently
+     * rejected). Call after driving, BEFORE terminate, while the session is live.
+     */
+    readLmsModel() {
+      return frame
+        .evaluate(() => {
+          const find = (name) => {
+            for (let w = window, i = 0; w && i < 15; i++) {
+              if (w[name]) return w[name];
+              if (w.parent === w) break;
+              w = w.parent;
+            }
+            const o = window.opener;
+            for (let w = o, i = 0; w && i < 15; i++) {
+              if (w[name]) return w[name];
+              if (w.parent === w) break;
+              w = w.parent;
+            }
+            return null;
+          };
+          const a4 = find("API_1484_11");
+          if (a4)
+            return {
+              api: "scorm2004",
+              completion_status: a4.GetValue("cmi.completion_status"),
+              success_status: a4.GetValue("cmi.success_status"),
+              "score.scaled": a4.GetValue("cmi.score.scaled"),
+              lastError: a4.GetLastError(),
+              diagnostic: a4.GetDiagnostic ? a4.GetDiagnostic(a4.GetLastError()) : "",
+            };
+          const a12 = find("API");
+          if (a12)
+            return {
+              api: "scorm12",
+              lesson_status: a12.LMSGetValue("cmi.core.lesson_status"),
+              "score.raw": a12.LMSGetValue("cmi.core.score.raw"),
+              lastError: a12.LMSGetLastError(),
+            };
+          return { api: null };
+        })
+        .catch((e) => ({ error: e.message }));
+    },
   };
   return ctx;
 }
