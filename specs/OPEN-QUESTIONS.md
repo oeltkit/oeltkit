@@ -23,11 +23,25 @@ When a spec is ambiguous: for a local, reversible call, decide it and log it her
 
 ## Open
 
-_None._
+### OQ-004 — SCORM 2004 + cmi5 fail real-LMS conformance (zero-dep adapters) — REOPENS OQ-001
+
+- **Context:** `packages/runtime/adapters/{scorm2004,cmi5}.ts` + `packages/cli` manifest generation; surfaced by Task 10's SCORM Cloud regression net (the first time 2004/cmi5 ran on a real LMS — the Phase 0 exit gate only exercised SCORM 1.2).
+- **Question:** OQ-001 kept the zero-dependency adapters, arbitrated solely by a passing **SCORM 1.2** run. The net now exercises all three LMS targets on SCORM Cloud and **1.2 passes but 2004 and cmi5 do not.** Patch the hand-written adapters/manifests, or adopt the permitted libraries (`scorm-again` for SCORM RTE, `@xapi/cmi5` for cmi5)?
+- **Evidence (run 27762927481 + 27704984706, artifacts in CI):**
+  - **SCORM 1.2 — ✅ conformant.** completion `COMPLETED`, success `PASSED`, score correct on the real LMS (pass + fail variants).
+  - **SCORM 2004 — 🔴 reports correctly but does not roll up.** The content-frame read-back of the live RTE just before terminate shows the adapter set everything and the LMS accepted it: `cmi.completion_status=completed`, `cmi.success_status=passed`, `cmi.score.scaled=1`, `GetLastError()=0`. `state.commit()` calls `Commit()` after every mutation. Yet the REST registration (and the activity itself) report `registrationCompletion=UNKNOWN`, no score. **Root cause:** the generated `imsmanifest.xml` (scorm2004) has no `<imsss:sequencing>` — no primary objective / rollup rules / `adlcp:completionThreshold` — so SCORM Cloud never promotes the SCO's reported status to the activity/registration. SCORM 1.2 has no rollup model (its `lesson_status` _is_ the status), which is why 1.2 works and 2004 doesn't.
+  - **cmi5 — 🔴 AU never renders.** Import succeeds (after the OQ-003 IRI fix). The player chrome renders but the page body is empty and there is no position indicator → `rt.start()` never completes → the cmi5 `adapter.start()` (auth-token fetch + `LMS.LaunchData` read) throws on the real LRS. Exact failure not yet captured (needs one diagnostic run with the new console capture); candidate causes: token/State endpoint response shape or CORS from the AU origin.
+- **Blocking?:** yes for declaring 2004/cmi5 real-LMS-conformant. The net (Task 10) itself is complete and is what surfaced this.
+- **Options / recommendation:**
+  - **(a) Patch by hand:** add SCORM 2004 sequencing/objectives/rollup to the manifest generator; debug the cmi5 launch handshake against Cloud. Keeps zero-dep, but 2004 sequencing and cmi5 launch/State are exactly the fiddly, conformance-sensitive areas the libraries exist for — likely several Cloud iterations.
+  - **(b) Adopt the permitted libraries** (CLAUDE.md hard-rule 1 already allows `scorm-again` + `@xapi/*` as the _only_ runtime deps): `scorm-again` is **also a content-side client** (not only an LMS-side API provider, as OQ-001 assumed — see correction below) and handles 2004 RTE+rollup nuances; `@xapi/cmi5` handles the launch/auth/State handshake. Bundle cost against the ~30 KB target is the tradeoff.
+  - **Recommendation:** at minimum fix the 2004 manifest rollup (contained, in the packager) and capture the cmi5 `start()` error; then decide (a) vs (b) for cmi5 with that error in hand. **Pending Jim's call** — this is the cross-cutting decision OQ-001 made on incomplete evidence.
 
 ## Resolved
 
-### OQ-001 — Adopt `scorm-again` / `@xapi/cmi5`, or keep zero-dep content-side clients? — RESOLVED (keep zero-dep), 2026-06-14
+### OQ-001 — Adopt `scorm-again` / `@xapi/cmi5`, or keep zero-dep content-side clients? — RESOLVED (keep zero-dep), 2026-06-14 · **REOPENED 2026-06-18, see OQ-004**
+
+> **Reopened (2026-06-18):** the 2026-06-14 decision was arbitrated by a SCORM **1.2**-only exit-gate run. Task 10's net ran all three LMS targets on SCORM Cloud: 1.2 passes, **2004 and cmi5 fail real-LMS conformance** (evidence in OQ-004). The "scorm-again is LMS-side only" finding below is **partially incorrect** — `scorm-again` ships content-side wrappers too. Decision under review in OQ-004.
 
 - **Context:** `specs/` runtime; surfaced by Task 03 (runtime spike). CLAUDE.md hard-rule 1 _permits_ `scorm-again` and `@xapi/*` as runtime deps; it does not require them.
 - **Question:** Should `@oeltkit/runtime` depend on `scorm-again` and/or `@xapi/cmi5`, or keep the hand-written zero-dependency content-side adapters introduced in the spike?
